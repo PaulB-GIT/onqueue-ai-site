@@ -25,6 +25,7 @@ const year = new Date().getFullYear();
       <h2 class="site-footer__heading">Contact</h2>
       <ul class="site-footer__list">
         <li><a href={demoMailto}>{site.email}</a></li>
+        {site.portalUrl && <li><a href={site.portalUrl} rel="noopener">{site.portalLabel}</a></li>}
         <li><a href={site.parentUrl} rel="noopener">onqueueva.com</a></li>
       </ul>
     </div>
