@@ -1,0 +1,25 @@
+---
+interface Props {
+  eyebrow?: string;
+  title: string;
+  intro?: string;
+  align?: 'left' | 'center';
+  id?: string;
+  level?: 'h1' | 'h2';
+}
+const { eyebrow, title, intro, align = 'left', id, level = 'h2' } = Astro.props;
+const Tag = level;
+---
+<div class:list={['section-heading', `section-heading--${align}`]}>
+  {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+  <Tag id={id}>{title}</Tag>
+  {intro && <p class="lead section-heading__intro">{intro}</p>}
+  <slot />
+</div>
+
+<style>
+  .section-heading { max-width: 720px; margin-bottom: clamp(2rem, 1.5rem + 2vw, 3.5rem); }
+  .section-heading--center { margin-inline: auto; text-align: center; }
+  .section-heading--center .eyebrow { justify-content: center; }
+  .section-heading__intro { margin-top: var(--space-4); }
+</style>

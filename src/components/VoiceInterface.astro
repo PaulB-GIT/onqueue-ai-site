@@ -1,0 +1,329 @@
+---
+/**
+ * Illustrative voice-agent interface for the homepage hero.
+ * Pure SVG + CSS. It is clearly labelled as an illustration and never
+ * shows live data, real names, recordings or a "live" status.
+ */
+import Icon from './Icon.astro';
+
+const steps = [
+  { label: 'Call answered', icon: 'receptionist' },
+  { label: 'Inquiry captured', icon: 'message' },
+  { label: 'Appointment requested', icon: 'calendar' },
+] as const;
+
+// ── Waveform stage (viewBox 440 × 180). Bars are taller near the centre,
+// tapering to grey dashes at both ends, like a voice signal.
+const VB_W = 440, MID = 90;
+const n = 33, x0 = 76, step = 9.2, barW = 5.5;
+const bars = Array.from({ length: n }, (_, i) => {
+  const t = i / (n - 1);                       // 0 … 1 across the row
+  const env = Math.sin(Math.PI * t) ** 1.4;    // tall centre, small ends
+  const jitter = [0.75, 1, 0.82, 0.95, 0.7, 1, 0.88][i % 7];
+  const h = Math.max(6, Math.round(78 * env * jitter));
+  const x = x0 + i * step;
+  return {
+    x, h,
+    dur: (1.1 + ((i * 37) % 11) / 12).toFixed(2),      // 1.1–1.9 s, varied
+    delay: (-((i * 53) % 17) / 10).toFixed(2),
+  };
+});
+const dashes = [18, 30, 42, 54, 400 - 34, 400 - 22, 400 - 10, 400 + 2].map((x, i) => ({ x: i < 4 ? x : x + 24, w: i % 4 === 3 ? 8 : 6 }));
+const orbit = 'M20 90 a200 52 0 1 0 400 0 a200 52 0 1 0 -400 0';
+// Per-element timings go in a <style> block, NOT in style="" attributes:
+// embedded previews with a strict Content-Security-Policy block style attributes,
+// which silently froze the animation.
+const barCss = [
+  `.vi__orbiter{offset-path:path('${orbit}')}`,
+  ...bars.map((b, i) => `.vi__bars>rect:nth-child(${i + 1}){--dur:${b.dur}s;--delay:${b.delay}s}`),
+  ...[0, 1, 2, 3, 4, 5, 6].map((i) => `.vi__node:nth-child(${i + 1}){animation-delay:${-i * 0.9}s}`),
+  ...[0, 1, 2].map((i) => `.vi__step:nth-child(${i + 1}){animation-delay:${i * 1.4}s}`),
+].join('');
+const nodes = [
+  { cx: 46, cy: 66 }, { cx: 104, cy: 122 }, { cx: 170, cy: 50 }, { cx: 250, cy: 140 },
+  { cx: 330, cy: 44 }, { cx: 380, cy: 126 }, { cx: 410, cy: 70 },
+];
+---
+<style is:inline set:html={barCss}></style>
+
+<script>
+  /*
+   * Drives the waveform with the Web Animations API, so the motion works even
+   * where CSS animations are restricted (e.g. embedded previews).
+   * The CSS animation in the stylesheet is the no-JavaScript fallback.
+   *
+   * - Bars: each rises and falls through its own uneven pattern (clearly visible,
+   *   smooth, no flashing).
+   * - Beam: sweeps left to right, then back right to left, with its soft trail
+   *   always behind it. Bars brighten as it passes.
+   */
+  const stage = document.querySelector<HTMLElement>('[data-vi-stage]');
+  if (stage && typeof Element.prototype.animate === 'function') {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const bars = Array.from(stage.querySelectorAll<SVGRectElement>('.vi__bars > rect'));
+    const beam = stage.querySelector<SVGGElement>('.vi__beam');
+    const cycle = 12000; // one full there-and-back sweep
+    const X0 = 40, X1 = 400;
+    // A few uneven rise-and-fall patterns, so neighbouring bars never move in step
+    const patterns = [
+      [0.2, 1.2, 0.45, 1.05, 0.25],
+      [0.55, 0.15, 1.15, 0.35, 0.9],
+      [1, 0.3, 0.75, 0.12, 1.2],
+      [0.35, 0.95, 0.2, 1.25, 0.5],
+      [0.8, 0.22, 1.1, 0.6, 0.18],
+    ];
+    stage.classList.add('vi--js');
+
+    bars.forEach((bar, i) => {
+      if (reduce) {
+        bar.animate([{ transform: 'scaleY(0.7)' }, { transform: 'scaleY(1)' }], {
+          duration: 3200, delay: -((i * 53) % 17) * 100, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out',
+        });
+        return;
+      }
+      const pat = patterns[(i * 3) % patterns.length];
+      const frames = [...pat, pat[0]].map((v) => ({ transform: `scaleY(${v})` }));
+      bar.animate(frames, {
+        duration: 1800 + ((i * 37) % 9) * 140, // 1.8–2.9 s per pattern
+        delay: -((i * 71) % 23) * 120,
+        iterations: Infinity,
+        easing: 'ease-in-out',
+      });
+
+      // Brighten when the beam passes: once going right, once coming back
+      const x = 76 + i * 9.2 + 2.75;
+      const f = Math.min(1, Math.max(0, (x - X0) / (X1 - X0)));
+      const peaks = [f / 2, 1 - f / 2];
+      const lit: Keyframe[] = [{ offset: 0, filter: 'brightness(1)' }];
+      let last = 0;
+      for (const p of peaks) {
+        const pts: [number, number][] = [[p - 0.025, 1], [p, 1.5], [p + 0.04, 1]];
+        for (const [o, v] of pts) {
+          const off = Math.min(1, Math.max(last + 0.0001, o));
+          if (off > last && off < 1) { lit.push({ offset: off, filter: `brightness(${v})` }); last = off; }
+        }
+      }
+      lit.push({ offset: 1, filter: 'brightness(1)' });
+      bar.animate(lit, { duration: cycle, iterations: Infinity });
+    });
+
+    if (beam && !reduce) {
+      beam.animate(
+        [
+          { offset: 0, transform: `translateX(${X0}px) scaleX(1)` },
+          { offset: 0.4999, transform: `translateX(${X1}px) scaleX(1)` },
+          { offset: 0.5, transform: `translateX(${X1}px) scaleX(-1)` },
+          { offset: 1, transform: `translateX(${X0}px) scaleX(-1)` },
+        ],
+        { duration: cycle, iterations: Infinity, easing: 'linear' }
+      );
+    }
+  }
+</script>
+<figure class="vi" aria-labelledby="vi-caption">
+  <svg class="vi__circuit" viewBox="0 0 520 520" aria-hidden="true" focusable="false">
+    <g fill="none" stroke="rgba(184,196,214,0.16)" stroke-width="1.2">
+      <path d="M0 120 H90 L130 160 H200" />
+      <path d="M0 400 H70 L110 360 H170" />
+      <path d="M520 90 H430 L390 130 H340" />
+      <path d="M520 440 H450 L410 400 H360" />
+      <path d="M260 0 V50 L290 80" />
+    </g>
+    <g fill="#EDBF0C" fill-opacity=".7">
+      <circle cx="200" cy="160" r="3" /><circle cx="170" cy="360" r="3" />
+      <circle cx="340" cy="130" r="3" /><circle cx="360" cy="400" r="3" />
+      <circle cx="290" cy="80" r="3" />
+    </g>
+  </svg>
+
+  <div class="vi__panel">
+    <div class="vi__top">
+      <span class="vi__tag">Illustrative workflow</span>
+      <span class="vi__agent"><span class="vi__signal" aria-hidden="true"></span>AI voice agent</span>
+    </div>
+
+    <div class="vi__stage" aria-hidden="true" data-vi-stage>
+      <svg viewBox={`0 0 ${VB_W} 180`} focusable="false">
+        <defs>
+          <radialGradient id="vi-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#1D5FA8" stop-opacity=".55" />
+            <stop offset="1" stop-color="#0A4889" stop-opacity="0" />
+          </radialGradient>
+          <linearGradient id="vi-bar" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#F9DC5C" />
+            <stop offset="1" stop-color="#D9A90A" />
+          </linearGradient>
+          <linearGradient id="vi-trail" x1="0" x2="1">
+            <stop offset="0" stop-color="#FFF6D6" stop-opacity="0" />
+            <stop offset="1" stop-color="#FFF6D6" stop-opacity=".16" />
+          </linearGradient>
+        </defs>
+
+        <ellipse cx="220" cy="90" rx="170" ry="70" fill="url(#vi-glow)" />
+
+        <g fill="none" stroke-width="1">
+          <ellipse cx="220" cy="90" rx="150" ry="44" stroke="rgba(143,179,221,.28)" />
+          <ellipse cx="220" cy="90" rx="200" ry="52" stroke="rgba(184,196,214,.3)" stroke-dasharray="2 4" />
+          <path d="M46 66 L170 50 L330 44 L410 70 M104 122 L250 140 L380 126" stroke="rgba(184,196,214,.12)" />
+        </g>
+        <g fill="#F4E3A1">
+          {nodes.map((d) => <circle class="vi__node" cx={d.cx} cy={d.cy} r="2.6" />)}
+        </g>
+        <circle class="vi__orbiter" r="3.2" fill="#FFF3C4" />
+
+        <g fill="rgba(143,163,190,.55)">
+          {dashes.map((d) => <rect x={d.x} y={MID - 2} width={d.w} height="4" rx="2" />)}
+        </g>
+
+        <g class="vi__bars" fill="url(#vi-bar)">
+          {bars.map((b) => (
+            <rect
+              class="vi__bar"
+              x={b.x}
+              y={MID - b.h / 2}
+              width={barW}
+              height={b.h}
+              rx={barW / 2}
+            />
+          ))}
+        </g>
+
+        <g class="vi__beam">
+          <rect x="-60" y="18" width="60" height="144" fill="url(#vi-trail)" />
+          <rect x="-1" y="18" width="1.5" height="144" fill="#F4E3A1" opacity=".85" />
+        </g>
+      </svg>
+    </div>
+
+    <ol class="vi__steps">
+      {steps.map((s) => (
+        <li class="vi__step">
+          <span class="vi__step-icon"><Icon name={s.icon} size={18} /></span>
+          <span class="vi__step-label">{s.label}</span>
+          <span class="vi__step-check"><Icon name="check" size={16} /></span>
+        </li>
+      ))}
+    </ol>
+  </div>
+  <figcaption id="vi-caption" class="vi__caption">
+    Illustrative workflow — an example of how a configured call could progress. Not a live system.
+  </figcaption>
+</figure>
+
+<style>
+  .vi { position: relative; margin: 0; width: 100%; max-width: 480px; margin-inline: auto; }
+  .vi__circuit { position: absolute; inset: -12%; width: 124%; height: 124%; max-width: none; }
+  .vi__panel {
+    position: relative;
+    background: linear-gradient(160deg, rgba(18, 53, 92, 0.85), rgba(7, 27, 51, 0.95));
+    border: 1px solid rgba(184, 196, 214, 0.18);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  .vi__top { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+  .vi__tag {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--brand-gold);
+    border: 1px solid rgba(237, 191, 12, 0.4);
+    border-radius: 999px;
+    padding: 4px 10px;
+  }
+  .vi__agent { display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-xs); color: var(--muted-on-dark); }
+  .vi__signal {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--brand-gold);
+    box-shadow: 0 0 0 0 rgba(237, 191, 12, 0.5);
+    animation: vi-signal 3.2s var(--ease) infinite;
+  }
+
+  .vi__stage { margin: var(--space-4) calc(-1 * clamp(0.5rem, 0.25rem + 1vw, 1rem)); }
+  .vi__stage svg { width: 100%; height: auto; overflow: hidden; }
+
+  /* Bars rise and fall smoothly like a voice signal, and brighten as the beam passes */
+  .vi__bar {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation:
+      vi-bar var(--dur, 2s) ease-in-out var(--delay, 0s) infinite alternate;
+  }
+  .vi__beam { animation: vi-sweep 6s linear infinite alternate; }
+  .vi__node { animation: vi-node 4.5s ease-in-out infinite; }
+  .vi__orbiter { offset-rotate: 0deg; animation: vi-orbit 26s linear infinite; }
+
+  @keyframes vi-bar {
+    from { transform: scaleY(0.18); }
+    to { transform: scaleY(1.2); }
+  }
+  @keyframes vi-sweep {
+    from { transform: translateX(40px); }
+    to { transform: translateX(400px); }
+  }
+  @keyframes vi-node { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+  @keyframes vi-orbit { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+
+  .vi__steps { list-style: none; display: grid; gap: var(--space-2); position: relative; }
+  .vi__step {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 0.7rem 0.85rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(184, 196, 214, 0.14);
+    border-radius: var(--radius);
+    color: var(--warm-white);
+    font-size: var(--text-sm);
+    font-weight: 550;
+    animation: vi-step 9s var(--ease) infinite;
+  }
+  .vi__step-icon {
+    flex: none;
+    display: grid; place-items: center;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: rgba(10, 72, 137, 0.6);
+    color: var(--brand-gold);
+  }
+  .vi__step-label { flex: 1; }
+  .vi__step-check { color: var(--brand-gold); }
+  .vi__caption {
+    position: relative;
+    margin-top: var(--space-3);
+    font-size: var(--text-xs);
+    color: var(--muted-on-dark);
+    text-align: center;
+  }
+
+  @keyframes vi-signal {
+    0% { box-shadow: 0 0 0 0 rgba(237, 191, 12, 0.45); }
+    70%, 100% { box-shadow: 0 0 0 8px rgba(237, 191, 12, 0); }
+  }
+  /* Gentle highlight only — every step stays fully visible at all times */
+  @keyframes vi-step {
+    0%, 100% { border-color: rgba(184, 196, 214, 0.14); }
+    10%, 25% { border-color: rgba(237, 191, 12, 0.5); }
+  }
+  /* Reduced motion: no beam sweep or orbit, but the bars keep a very gentle,
+     slow movement so the wave still feels alive. */
+  @keyframes vi-bar-soft {
+    from { transform: scaleY(0.7); }
+    to { transform: scaleY(1); }
+  }
+  /* When the script is running it owns the bar and beam motion */
+  .vi--js .vi__bar, .vi--js .vi__beam { animation: none !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vi__beam, .vi__node, .vi__orbiter, .vi__signal, .vi__step { animation: none !important; }
+    .vi__bar {
+      animation: vi-bar-soft 3.6s ease-in-out var(--delay, 0s) infinite alternate !important;
+      animation-duration: 3.6s !important;
+      animation-iteration-count: infinite !important;
+      filter: none;
+    }
+    .vi__beam { transform: translateX(150px); }
+    .vi__orbiter { offset-distance: 20%; }
+  }
+</style>

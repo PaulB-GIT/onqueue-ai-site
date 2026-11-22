@@ -1,0 +1,197 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import Icon from '../components/Icon.astro';
+import FAQ from '../components/FAQ.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { meta, hero, steps, needs, boundaries, faq, closing } from '../data/howItWorks';
+---
+<BaseLayout title={meta.title} description={meta.description}>
+  <PageHero eyebrow={hero.eyebrow} title={hero.title} intro={hero.text} secondary={{ label: 'See the process', href: '#process' }} />
+
+  <!-- Four-step process -->
+  <section id="process" class="section surface-light" aria-labelledby="process-title">
+    <div class="container">
+      <SectionHeading id="process-title" eyebrow={steps.eyebrow} title={steps.title} />
+      <ol class="steps">
+        {steps.items.map((s, i) => (
+          <li class="step">
+            <div class="step__top">
+              <span class="step__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              <span class="step__icon"><Icon name={s.icon} size={24} /></span>
+            </div>
+            <h3><span class="sr-only">Step {i + 1}: </span>{s.title}</h3>
+            <p>{s.text}</p>
+          </li>
+        ))}
+      </ol>
+      <p class="note steps-note">{steps.note}</p>
+    </div>
+  </section>
+
+  <!-- What we need -->
+  <section class="section surface-white" aria-labelledby="needs-title">
+    <div class="container needs">
+      <div>
+        <SectionHeading id="needs-title" eyebrow={needs.eyebrow} title={needs.title} intro={needs.intro} />
+        <div class="needs__security">
+          <span class="needs__security-icon"><Icon name="key" size={22} /></span>
+          <p>{needs.security}</p>
+        </div>
+      </div>
+      <ul class="needs__list">
+        {needs.items.map((item) => (
+          <li><span class="needs__check"><Icon name="check" size={16} /></span>{item}</li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- Clear boundaries -->
+  <section class="section surface-dark boundaries" aria-labelledby="boundaries-title">
+    <div class="tech-grid" aria-hidden="true"></div>
+    <div class="container boundaries__inner">
+      <SectionHeading id="boundaries-title" eyebrow={boundaries.eyebrow} title={boundaries.title} intro={boundaries.intro} />
+      <ul class="boundaries__grid">
+        {boundaries.items.map((b) => (
+          <li class="boundary">
+            <span class="boundary__icon"><Icon name={b.icon} size={22} /></span>
+            <h3>{b.title}</h3>
+            <p>{b.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section surface-light" aria-labelledby="faq-title">
+    <div class="container faq-wrap">
+      <SectionHeading id="faq-title" eyebrow={faq.eyebrow} title={faq.title} intro="Honest answers. What’s possible depends on the setup we agree with you." />
+      <FAQ items={faq.items} />
+    </div>
+  </section>
+
+  <CtaBand title={closing.title} text={closing.text} />
+</BaseLayout>
+
+<style>
+  .steps {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-5);
+    counter-reset: step;
+    position: relative;
+  }
+  .step {
+    position: relative;
+    background: var(--white);
+    border: 1px solid var(--line-light);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6) var(--space-5);
+    box-shadow: var(--shadow-sm);
+  }
+  .step__top { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-5); }
+  .step__num {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 2.25rem;
+    line-height: 1;
+    color: var(--brand-blue);
+    letter-spacing: -0.04em;
+  }
+  .step__icon {
+    display: grid; place-items: center;
+    width: 46px; height: 46px; border-radius: 12px;
+    background: var(--brand-navy); color: var(--brand-gold);
+  }
+  .step h3 { font-size: 1.125rem; }
+  .step p { font-size: var(--text-sm); }
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 50px;
+    right: calc(-1 * var(--space-5) - 1px);
+    width: calc(var(--space-5) + 2px);
+    height: 2px;
+    background: linear-gradient(90deg, var(--brand-gold), var(--blue-100));
+  }
+  .steps-note { margin-top: var(--space-6); max-width: 680px; }
+
+  .needs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(2rem, 1rem + 4vw, 5rem);
+    align-items: start;
+  }
+  .needs__security {
+    display: flex;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border-radius: var(--radius);
+    background: var(--blue-50);
+    border: 1px solid var(--blue-100);
+    font-size: var(--text-sm);
+  }
+  .needs__security p { color: var(--ink); }
+  .needs__security-icon { flex: none; color: var(--brand-blue); }
+  .needs__list {
+    list-style: none;
+    display: grid;
+    gap: 0;
+    background: var(--warm-white);
+    border: 1px solid var(--line-light);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-5);
+  }
+  .needs__list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
+    color: var(--ink);
+    font-weight: 550;
+  }
+  .needs__list li + li { border-top: 1px solid var(--line-light); }
+  .needs__check {
+    flex: none;
+    display: grid; place-items: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--brand-gold); color: var(--brand-navy);
+  }
+
+  .boundaries { overflow: hidden; }
+  .boundaries__inner { position: relative; }
+  .boundaries__grid {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line-dark);
+    border: 1px solid var(--line-dark);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .boundary { background: var(--brand-navy); padding: var(--space-6) var(--space-5); }
+  .boundary__icon { display: inline-flex; color: var(--brand-gold); margin-bottom: var(--space-4); }
+  .boundary h3 { font-size: 1.0625rem; margin-bottom: var(--space-2); }
+  .boundary p { font-size: var(--text-sm); }
+
+  .faq-wrap { display: grid; grid-template-columns: 1fr 1.6fr; gap: clamp(2rem, 1rem + 4vw, 5rem); align-items: start; }
+
+  @media (max-width: 1024px) {
+    .steps { grid-template-columns: repeat(2, 1fr); }
+    .step:nth-child(2)::after { display: none; }
+    .boundaries__grid { grid-template-columns: repeat(2, 1fr); }
+    .faq-wrap { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 760px) {
+    .needs { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .steps, .boundaries__grid { grid-template-columns: 1fr; }
+    .step::after { display: none; }
+  }
+</style>

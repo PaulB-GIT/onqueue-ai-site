@@ -1,0 +1,26 @@
+---
+/* Not a marketing page: shown only when someone visits a URL that doesn't exist. */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/Button.astro';
+---
+<BaseLayout title="Page not found | ON-QUEUE AI" description="The page you were looking for could not be found.">
+  <section class="section surface-light">
+    <div class="container nf">
+      <p class="eyebrow">404</p>
+      <h1>We couldn’t find that page.</h1>
+      <p class="lead">The link may be out of date. These pages will help you find what you need.</p>
+      <div class="nf__links">
+        <Button href="/" variant="ghost-light">Services</Button>
+        <Button href="/how-it-works/" variant="outline">How It Works</Button>
+        <Button href="/pricing/" variant="outline">Pricing</Button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf { max-width: 640px; text-align: center; }
+  .nf .eyebrow { justify-content: center; }
+  .nf h1 { font-size: var(--text-3xl); }
+  .nf__links { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 24px; }
+</style>

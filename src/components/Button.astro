@@ -1,0 +1,29 @@
+---
+import Icon, { type IconName } from './Icon.astro';
+
+// Button styles live in src/styles/global.css so the header CTA works on every page.
+interface Props {
+  href: string;
+  variant?: 'primary' | 'secondary' | 'ghost-light' | 'outline';
+  icon?: IconName;
+  iconPosition?: 'start' | 'end';
+  size?: 'md' | 'lg';
+  class?: string;
+  [key: string]: unknown;
+}
+const {
+  href,
+  variant = 'primary',
+  icon,
+  iconPosition = 'end',
+  size = 'md',
+  class: className,
+  ...rest
+} = Astro.props;
+---
+<a href={href} class:list={['btn', `btn--${variant}`, `btn--${size}`, className]} {...rest}>
+  {icon && iconPosition === 'start' && <Icon name={icon} size={18} />}
+  <span><slot /></span>
+  {icon && iconPosition === 'end' && <Icon name={icon} size={18} />}
+</a>
+

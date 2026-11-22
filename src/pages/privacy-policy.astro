@@ -1,0 +1,86 @@
+---
+/*
+ * Legal page — linked from the footer only, not part of the main navigation.
+ * Text comes from src/data/privacyPolicy.ts.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { meta, draft, title, lastUpdated, sections, type Para } from '../data/privacyPolicy';
+
+const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// Turn email addresses, the site URL and privacy-authority domains into links.
+const linkify = (text: string) =>
+  escape(text)
+    .replace(/contact@onqueueva\.com/g, '<a href="mailto:contact@onqueueva.com">contact@onqueueva.com</a>')
+    .replace(/https:\/\/ai\.onqueueva\.com/g, '<a href="https://ai.onqueueva.com/">https://ai.onqueueva.com</a>')
+    .replace(/\((privacy\.gov\.ph|ico\.org\.uk|oaic\.gov\.au)\)/g, '(<a href="https://$1" rel="noopener">$1</a>)');
+const isTodo = (p: Para): p is { todo: string } => typeof p !== 'string';
+---
+<BaseLayout title={meta.title} description={meta.description}>
+  <section class="legal-hero surface-dark" aria-labelledby="page-title">
+    <div class="tech-grid" aria-hidden="true"></div>
+    <div class="container legal-hero__inner">
+      <p class="eyebrow">Legal</p>
+      <h1 id="page-title">{title}</h1>
+      <p class="legal-hero__date">
+        Last updated:{' '}
+        {lastUpdated ? lastUpdated : <mark class="todo-inline">[Insert publication date]</mark>}
+      </p>
+    </div>
+  </section>
+
+  <section class="section surface-light">
+    <div class="container"><div class="legal">
+      {draft && (
+        <p class="legal__draft" role="note">
+          <strong>Draft for review.</strong> The highlighted item in section 5 is a placeholder from the source document and must be completed before this page is published.
+        </p>
+      )}
+      {sections.map((s) => (
+        <section class="legal__section">
+          <h2>{s.heading}</h2>
+          {s.paras.map((p) =>
+            isTodo(p) ? (
+              <p class="legal__todo"><mark>[{p.todo}]</mark></p>
+            ) : (
+              <p set:html={linkify(p)} />
+            )
+          )}
+        </section>
+      ))}
+    </div></div>
+  </section>
+</BaseLayout>
+
+<style>
+  .legal-hero {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(3rem, 2rem + 4vw, 5.5rem);
+    background: radial-gradient(ellipse 60% 90% at 90% 0%, rgba(10, 72, 137, 0.5), transparent 70%), var(--brand-navy);
+  }
+  .legal-hero__inner { position: relative; }
+  .legal-hero h1 { font-size: var(--text-3xl); max-width: 22ch; }
+  .legal-hero__date { margin: 0; font-size: var(--text-sm); }
+  .legal { max-width: 780px; }
+  .legal__section + .legal__section { margin-top: var(--space-7); }
+  .legal h2 { font-size: var(--text-xl); padding-bottom: var(--space-3); border-bottom: 1px solid var(--line-light); }
+  .legal p { max-width: 70ch; }
+  .legal__draft {
+    margin-bottom: var(--space-7);
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius);
+    background: var(--gold-soft);
+    border: 1px solid #e8cf6a;
+    color: var(--ink);
+    font-size: var(--text-sm);
+  }
+  mark {
+    background: var(--gold-soft);
+    color: var(--ink);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  .todo-inline { font-weight: 600; }
+</style>

@@ -1,0 +1,34 @@
+# Optional Render Blueprint for the ON-QUEUE AI static site.
+# Checked against https://render.com/docs/blueprint-spec (November 2026).
+# You do NOT need this file if you create the site by clicking
+# "New > Static Site" in the Render Dashboard (see README, Part 4).
+# It is only used if you choose "New > Blueprint".
+services:
+  - type: web
+    name: onqueue-ai-site
+    runtime: static
+    branch: main
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_VERSION
+        value: 22.23.5
+    headers:
+      # Keep previews out of search results until launch.
+      # REMOVE this header when the site is approved and live on its real domain.
+      - path: /*
+        name: X-Robots-Tag
+        value: noindex, nofollow
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      # Built files have unique names, so browsers can cache them long-term.
+      - path: /_astro/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable

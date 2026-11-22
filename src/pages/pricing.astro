@@ -1,0 +1,197 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import Button from '../components/Button.astro';
+import Icon from '../components/Icon.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { demoHref, demoMailto } from '../config/site';
+import { meta, hero, plan, factors, proposal, closing } from '../data/pricing';
+---
+<BaseLayout title={meta.title} description={meta.description}>
+  <PageHero eyebrow={hero.eyebrow} title={hero.title} intro={hero.text} />
+
+  <!-- Pricing card -->
+  <section class="section surface-light pricing" aria-labelledby="plan-title">
+    <div class="container">
+      <article class="plan">
+        <div class="plan__head">
+          <div class="plan__intro">
+            <p class="eyebrow">One managed service</p>
+            <h2 id="plan-title">{plan.title}</h2>
+            <p class="plan__desc">{plan.description}</p>
+          </div>
+          <div class="plan__price">
+            <p class="plan__price-value">{plan.price}</p>
+            <p class="plan__price-sub">Scoped to your workflow</p>
+            <div class="plan__actions">
+              <Button href={demoHref} size="lg" icon="arrowRight">BOOK A DEMO</Button>
+              <Button href={demoMailto} variant="secondary" size="lg">{plan.secondaryLabel}</Button>
+            </div>
+          </div>
+        </div>
+        <div class="plan__body">
+          <h3 class="plan__components-label">{plan.componentsLabel}</h3>
+          <ul class="plan__components">
+            {plan.components.map((c) => (
+              <li class="component">
+                <span class="component__icon"><Icon name={c.icon} size={24} /></span>
+                <h4>{c.title}</h4>
+                <p>{c.text}</p>
+              </li>
+            ))}
+          </ul>
+          <p class="plan__footnote">{plan.footnote}</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- What shapes your quote + what the proposal clarifies -->
+  <section class="section surface-white" aria-labelledby="factors-title">
+    <div class="container quote-grid">
+      <div>
+        <SectionHeading id="factors-title" eyebrow={factors.eyebrow} title={factors.title} />
+        <ul class="factors">
+          {factors.items.map((f) => (
+            <li><span class="factors__icon"><Icon name={f.icon} size={20} /></span>{f.text}</li>
+          ))}
+        </ul>
+      </div>
+      <div class="proposal">
+        <span class="proposal__icon"><Icon name="receipt" size={26} /></span>
+        <p class="eyebrow">{proposal.eyebrow}</p>
+        <h2 id="proposal-title" class="proposal__title">{proposal.title}</h2>
+        <p>{proposal.intro}</p>
+        <ul class="check-list proposal__list">
+          {proposal.items.map((p) => <li><Icon name="checkCircle" size={20} /><span>{p}</span></li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand title={closing.title} text={closing.text} />
+</BaseLayout>
+
+<style>
+  .plan {
+    position: relative;
+    background: var(--white);
+    border-radius: calc(var(--radius-lg) + 4px);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    border: 1px solid var(--line-light);
+  }
+  .plan__head {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: var(--space-6);
+    align-items: center;
+    padding: clamp(1.75rem, 1rem + 3vw, 3.5rem);
+    background:
+      radial-gradient(ellipse 60% 100% at 100% 0%, rgba(10, 72, 137, 0.7), transparent 70%),
+      var(--navy-700);
+    color: var(--muted-on-dark);
+    border-bottom: 3px solid var(--brand-gold);
+  }
+  .plan__head h2 { color: var(--warm-white); font-size: var(--text-3xl); }
+  .plan__head .eyebrow { color: var(--brand-gold); }
+  .plan__desc { font-size: var(--text-lg); max-width: 44ch; }
+  .plan__price {
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(237, 191, 12, 0.35);
+    background: rgba(7, 27, 51, 0.55);
+  }
+  .plan__price-value {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2rem, 1.5rem + 2vw, 2.75rem);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: var(--brand-gold);
+    margin: 0;
+  }
+  .plan__price-sub { margin: var(--space-2) 0 var(--space-5); font-size: var(--text-sm); }
+  .plan__actions { display: grid; gap: var(--space-3); }
+  .plan__body { padding: clamp(1.75rem, 1rem + 3vw, 3.5rem); }
+  .plan__components-label {
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+    margin-bottom: var(--space-5);
+  }
+  .plan__components { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
+  .component {
+    padding: var(--space-5);
+    border: 1px solid var(--line-light);
+    border-radius: var(--radius-lg);
+    background: var(--warm-white);
+    position: relative;
+  }
+  .component + .component::before {
+    content: '+';
+    position: absolute;
+    left: calc(-1 * var(--space-5) / 2 - 11px);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px; height: 22px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    background: var(--brand-navy);
+    color: var(--brand-gold);
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1;
+  }
+  .component__icon {
+    display: grid; place-items: center;
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--blue-50); color: var(--brand-blue);
+    margin-bottom: var(--space-4);
+  }
+  .component h4 { font-family: var(--font-display); color: var(--ink); font-size: 1.125rem; margin: 0 0 var(--space-2); }
+  .component p { font-size: var(--text-sm); }
+  .plan__footnote { margin-top: var(--space-5); font-size: var(--text-sm); color: var(--body); }
+
+  .quote-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(2rem, 1rem + 4vw, 5rem); align-items: start; }
+  .factors { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+  .factors li {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--line-light);
+    border-radius: var(--radius);
+    background: var(--warm-white);
+    color: var(--ink);
+    font-weight: 550;
+    font-size: var(--text-sm);
+    line-height: 1.4;
+  }
+  .factors__icon {
+    flex: none; display: grid; place-items: center;
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--brand-navy); color: var(--brand-gold);
+  }
+  .proposal {
+    padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    border-radius: var(--radius-lg);
+    background: var(--blue-50);
+    border: 1px solid var(--blue-100);
+  }
+  .proposal__icon { display: flex; width: fit-content; color: var(--brand-blue); margin-bottom: var(--space-4); }
+  .proposal__title { font-size: var(--text-2xl); }
+  .proposal__list { margin-top: var(--space-5); }
+  .proposal__list li { color: var(--ink); font-weight: 550; }
+
+  @media (max-width: 960px) {
+    .plan__head, .quote-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 760px) {
+    .plan__components { grid-template-columns: 1fr; }
+    .component + .component::before { left: 50%; top: calc(-1 * var(--space-5) / 2 - 11px); transform: translateX(-50%); }
+  }
+  @media (max-width: 520px) {
+    .factors { grid-template-columns: 1fr; }
+  }
+</style>

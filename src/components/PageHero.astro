@@ -1,0 +1,61 @@
+---
+/** Hero used on the How It Works and Pricing pages. */
+import Button from './Button.astro';
+import { demoHref } from '../config/site';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  secondary?: { label: string; href: string };
+}
+const { eyebrow, title, intro, secondary } = Astro.props;
+---
+<section class="page-hero surface-dark" aria-labelledby="page-title">
+  <div class="tech-grid" aria-hidden="true"></div>
+  <svg class="page-hero__wave" viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+    <path d="M0 80 C 150 80, 200 30, 300 80 S 450 130, 600 80 S 750 20, 900 80 S 1050 120, 1200 80" fill="none" stroke="url(#ph-g)" stroke-width="1.5" />
+    <path class="page-hero__beam" pathLength="100" d="M0 80 C 150 80, 200 30, 300 80 S 450 130, 600 80 S 750 20, 900 80 S 1050 120, 1200 80" fill="none" stroke="url(#ph-beam)" stroke-width="2" stroke-linecap="round" />
+    <path d="M0 95 C 150 95, 220 60, 320 95 S 470 125, 620 95 S 780 55, 920 95 S 1060 115, 1200 95" fill="none" stroke="rgba(184,196,214,0.12)" stroke-width="1" />
+    <defs>
+      <linearGradient id="ph-beam" x1="0" x2="1">
+        <stop offset="0" stop-color="#EDBF0C" stop-opacity="0" />
+        <stop offset="1" stop-color="#F7DC6F" />
+      </linearGradient>
+      <linearGradient id="ph-g" x1="0" x2="1">
+        <stop offset="0" stop-color="#EDBF0C" stop-opacity="0" />
+        <stop offset=".5" stop-color="#EDBF0C" stop-opacity=".55" />
+        <stop offset="1" stop-color="#0A4889" stop-opacity="0" />
+      </linearGradient>
+    </defs>
+  </svg>
+  <div class="container page-hero__inner">
+    <p class="eyebrow">{eyebrow}</p>
+    <h1 id="page-title">{title}</h1>
+    <p class="lead page-hero__intro">{intro}</p>
+    <div class="page-hero__actions">
+      <Button href={demoHref} size="lg" icon="arrowRight">BOOK A DEMO</Button>
+      {secondary && <Button href={secondary.href} variant="secondary" size="lg">{secondary.label}</Button>}
+    </div>
+  </div>
+</section>
+
+<style>
+  .page-hero {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(4rem, 3rem + 5vw, 7.5rem) clamp(4.5rem, 3rem + 5vw, 8rem);
+    background:
+      radial-gradient(ellipse 60% 80% at 85% 0%, rgba(10, 72, 137, 0.55), transparent 70%),
+      var(--brand-navy);
+  }
+  .page-hero__inner { position: relative; max-width: var(--container); }
+  .page-hero h1 { font-size: clamp(2.25rem, 1.5rem + 3vw, 3.75rem); max-width: 18ch; }
+  .page-hero__intro { max-width: 60ch; margin-top: var(--space-5); }
+  .page-hero__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
+  /* Quiet version of the homepage light beam, gliding back and forth along the line */
+  .page-hero__beam { stroke-dasharray: 8 92; animation: ph-run 9s ease-in-out infinite alternate; opacity: 0.8; }
+  @keyframes ph-run { from { stroke-dashoffset: 108; } to { stroke-dashoffset: 0; } }
+  @media (prefers-reduced-motion: reduce) { .page-hero__beam { display: none; } }
+  .page-hero__wave { position: absolute; left: 0; right: 0; bottom: 8%; width: 100%; height: 120px; }
+</style>

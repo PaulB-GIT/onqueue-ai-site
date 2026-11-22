@@ -1,0 +1,151 @@
+---
+/**
+ * Demo-request section. There is no booking calendar or form backend yet,
+ * so this opens the visitor's email app with a pre-filled subject.
+ * It never claims an email was sent or a demo was booked.
+ */
+import Icon from './Icon.astro';
+import { site, demoMailto } from '../config/site';
+import { demo } from '../data/home';
+---
+<section id="book-a-demo" class="demo section surface-dark" aria-labelledby="demo-title">
+  <div class="tech-grid" aria-hidden="true"></div>
+  <div class="container demo__inner">
+    <div class="demo__copy">
+      <p class="eyebrow">{demo.eyebrow}</p>
+      <h2 id="demo-title">{demo.title}</h2>
+      <p class="lead">{demo.text}</p>
+      <ul class="check-list demo__points">
+        {demo.points.map((p) => <li><Icon name="checkCircle" size={20} /><span>{p}</span></li>)}
+      </ul>
+    </div>
+
+    <div class="demo__card">
+      <span class="demo__card-icon"><Icon name="mail" size={26} /></span>
+      <h3>Email us to arrange a demo</h3>
+      <p>Your email app will open with the subject line <strong>“{site.demoEmailSubject}”</strong> already filled in. Add a few details and press send.</p>
+
+      <a href={demoMailto} class="btn btn--primary btn--lg demo__btn">
+        <Icon name="mail" size={18} />
+        <span>EMAIL TO ARRANGE A DEMO</span>
+      </a>
+
+      <div class="demo__alt">
+        <p class="demo__alt-text">Prefer another email app? Copy our email address.</p>
+        <div class="demo__copyrow">
+          <code class="demo__email" data-email>{site.email}</code>
+          <button type="button" class="demo__copybtn" data-copy-email hidden>
+            <Icon name="copy" size={18} />
+            <span data-copy-label>Copy email</span>
+          </button>
+        </div>
+        <p class="demo__status" role="status" aria-live="polite" data-copy-status></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .demo {
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 50% 70% at 10% 100%, rgba(10, 72, 137, 0.45), transparent 70%),
+      var(--brand-navy);
+  }
+  .demo__inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: clamp(2rem, 1rem + 4vw, 5rem);
+    align-items: center;
+  }
+  .demo__points { margin-top: var(--space-6); }
+  .demo__card {
+    background: var(--warm-white);
+    color: var(--body);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    box-shadow: var(--shadow-lg);
+    border-top: 4px solid var(--brand-gold);
+  }
+  .demo__card h3 { color: var(--ink); font-size: var(--text-xl); }
+  .demo__card strong { color: var(--ink); }
+  .demo__card-icon {
+    display: grid; place-items: center;
+    width: 52px; height: 52px; border-radius: 12px;
+    background: var(--blue-50); color: var(--brand-blue);
+    margin-bottom: var(--space-4);
+  }
+  .demo__btn { width: 100%; margin-top: var(--space-5); }
+  .demo__btn:focus-visible { outline-color: var(--brand-blue); }
+  .demo__alt { margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--line-light); }
+  .demo__alt-text { font-size: var(--text-sm); margin-bottom: var(--space-3); }
+  .demo__copyrow { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: stretch; }
+  .demo__email {
+    flex: 1 1 200px;
+    display: flex; align-items: center;
+    min-height: 48px;
+    padding: 0 var(--space-4);
+    background: var(--white);
+    border: 1px solid var(--line-light);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    color: var(--ink);
+    user-select: all;
+    word-break: break-all;
+  }
+  .demo__copybtn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 48px;
+    padding: 0 var(--space-4);
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--brand-blue);
+    background: var(--white);
+    color: var(--brand-blue);
+    font: 600 var(--text-sm) var(--font-display);
+    cursor: pointer;
+  }
+  .demo__copybtn:hover { background: var(--blue-50); }
+  .demo__copybtn:focus-visible { outline-color: var(--brand-blue); }
+  .demo__status { min-height: 1.5em; margin-top: var(--space-2); font-size: var(--text-sm); color: var(--brand-blue); font-weight: 600; }
+
+  @media (max-width: 900px) {
+    .demo__inner { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-copy-email]');
+  const emailEl = document.querySelector<HTMLElement>('[data-email]');
+  const status = document.querySelector<HTMLElement>('[data-copy-status]');
+  const label = document.querySelector<HTMLElement>('[data-copy-label]');
+
+  if (btn && emailEl && status && label) {
+    btn.hidden = false; // only shown when JavaScript is available
+    let timer: number | undefined;
+
+    const announce = (msg: string) => {
+      status.textContent = msg;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => { status.textContent = ''; label.textContent = 'Copy email'; }, 5000);
+    };
+
+    btn.addEventListener('click', async () => {
+      const email = emailEl.textContent?.trim() ?? '';
+      try {
+        await navigator.clipboard.writeText(email);
+        label.textContent = 'Copied';
+        announce(`Email address copied: ${email}`);
+      } catch {
+        // Fallback: select the text so the visitor can copy it manually
+        const range = document.createRange();
+        range.selectNodeContents(emailEl);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+        announce('Copy was blocked by your browser. The address is selected — press Ctrl+C (or ⌘+C) to copy it.');
+      }
+    });
+  }
+</script>

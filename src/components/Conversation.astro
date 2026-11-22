@@ -1,0 +1,86 @@
+---
+/** Example conversation transcript. Clearly labelled; no audio, no live status. */
+import Icon from './Icon.astro';
+
+interface Props {
+  label: string;
+  turns: readonly { speaker: 'agent' | 'caller'; name: string; text: string }[];
+}
+const { label, turns } = Astro.props;
+---
+<figure class="convo">
+  <div class="convo__header">
+    <span class="convo__title"><Icon name="wave" size={18} /> Example: remodeling company</span>
+    <span class="convo__label">{label}</span>
+  </div>
+  <ol class="convo__list">
+    {turns.map((t) => (
+      <li class:list={['convo__turn', `convo__turn--${t.speaker}`]}>
+        <span class="convo__speaker">{t.name}</span>
+        <p class="convo__bubble">{t.text}</p>
+      </li>
+    ))}
+  </ol>
+  <figcaption class="sr-only">{label}</figcaption>
+</figure>
+
+<style>
+  .convo {
+    margin: 0;
+    background: linear-gradient(170deg, var(--navy-700), var(--navy-800));
+    border: 1px solid var(--line-dark);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+    box-shadow: var(--shadow-lg);
+  }
+  .convo__header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    padding-bottom: var(--space-4);
+    margin-bottom: var(--space-5);
+    border-bottom: 1px solid var(--line-dark);
+  }
+  .convo__title { display: inline-flex; align-items: center; gap: 8px; color: var(--warm-white); font-weight: 600; font-size: var(--text-sm); }
+  .convo__title :global(.icon) { color: var(--brand-gold); }
+  .convo__label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--brand-gold);
+    border: 1px solid rgba(237, 191, 12, 0.4);
+    border-radius: 999px;
+    padding: 3px 10px;
+  }
+  .convo__list { list-style: none; display: grid; gap: var(--space-4); }
+  .convo__turn { display: grid; gap: 6px; max-width: 88%; }
+  .convo__turn--caller { justify-self: end; text-align: right; }
+  .convo__speaker {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-on-dark);
+  }
+  .convo__turn--agent .convo__speaker { color: var(--brand-gold); }
+  .convo__bubble {
+    margin: 0;
+    padding: 0.85rem 1.1rem;
+    border-radius: 14px;
+    line-height: 1.55;
+    font-size: var(--text-base);
+    text-align: left;
+  }
+  .convo__turn--agent .convo__bubble {
+    background: rgba(10, 72, 137, 0.55);
+    border: 1px solid rgba(143, 179, 221, 0.25);
+    color: var(--warm-white);
+    border-top-left-radius: 4px;
+  }
+  .convo__turn--caller .convo__bubble {
+    background: var(--warm-white);
+    color: var(--ink);
+    border-top-right-radius: 4px;
+  }
+</style>

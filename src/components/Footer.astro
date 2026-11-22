@@ -1,0 +1,85 @@
+---
+import Logo from './Logo.astro';
+import { site, nav, demoMailto } from '../config/site';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer surface-dark">
+  <div class="container site-footer__grid">
+    <div class="site-footer__brand">
+      <a href="/" class="site-footer__logo" aria-label="ON-QUEUE AI — Services home"><Logo surface="dark" height={52} /></a>
+      <p>Managed AI voice agents, configured around your business.</p>
+      <p class="site-footer__parent">
+        {site.tagline}{' '}
+        <a href={site.parentUrl} rel="noopener">Visit {site.parentBrand}</a>
+      </p>
+    </div>
+
+    <nav aria-label="Footer">
+      <h2 class="site-footer__heading">Pages</h2>
+      <ul class="site-footer__list">
+        {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+    </nav>
+
+    <div>
+      <h2 class="site-footer__heading">Contact</h2>
+      <ul class="site-footer__list">
+        <li><a href={demoMailto}>{site.email}</a></li>
+        <li><a href={site.parentUrl} rel="noopener">onqueueva.com</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="container">
+   <div class="site-footer__bottom">
+    <p>&copy; {year} {site.brandName}. {site.tagline}</p>
+    {(site.privacyUrl || site.termsUrl) && (
+      <ul class="site-footer__legal">
+        {site.privacyUrl && <li><a href={site.privacyUrl}>Privacy Policy</a></li>}
+        {site.termsUrl && <li><a href={site.termsUrl}>Terms</a></li>}
+      </ul>
+    )}
+   </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--navy-900);
+    padding-top: var(--space-8);
+    font-size: var(--text-sm);
+    border-top: 1px solid var(--line-dark);
+  }
+  .site-footer__grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: var(--space-7);
+    padding-bottom: var(--space-7);
+  }
+  .site-footer__logo { display: inline-flex; margin-bottom: var(--space-4); text-decoration: none; border-radius: 8px; padding: 0 !important; }
+  .site-footer__brand p { max-width: 36ch; }
+  .site-footer__heading {
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--warm-white);
+    margin-bottom: var(--space-4);
+  }
+  .site-footer__list { list-style: none; display: grid; gap: var(--space-2); }
+  .site-footer a { color: var(--muted-on-dark); text-decoration: none; display: inline-block; padding-block: 4px; }
+  .site-footer a:hover { color: var(--brand-gold); text-decoration: underline; }
+  .site-footer__parent a { color: var(--brand-gold); }
+  .site-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding-block: var(--space-5);
+    border-top: 1px solid var(--line-dark);
+  }
+  .site-footer__legal { list-style: none; display: flex; gap: var(--space-5); }
+  @media (max-width: 760px) {
+    .site-footer__grid { grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+    .site-footer__brand { grid-column: 1 / -1; }
+  }
+</style>

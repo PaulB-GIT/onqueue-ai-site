@@ -1,0 +1,74 @@
+---
+/**
+ * Shows the real logo when one is configured in src/config/site.ts.
+ * If no logo file is configured, it falls back to a clearly marked temporary text wordmark.
+ */
+import { logo, site } from '../config/site';
+
+interface Props {
+  /** Background the logo sits on. Picks the best-contrast file if both exist. */
+  surface?: 'dark' | 'light';
+  height?: number;
+}
+const { surface = 'dark', height = logo.headerHeight } = Astro.props;
+const src = surface === 'dark' ? (logo.srcOnDark ?? logo.src) : logo.src;
+// If only a light-background logo exists, place it on a clean light plate.
+const needsPlate = surface === 'dark' && !logo.srcOnDark && !!logo.src;
+const width = logo.width && logo.height ? Math.round((logo.width / logo.height) * height) : undefined;
+const srcset = surface === 'dark' && logo.srcOnDark ? undefined : logo.srcset.map(([f, d]) => `${f} ${d}`).join(', ');
+---
+{
+  src && !logo.temporary ? (
+    <span class:list={['logo', { 'logo--plate': needsPlate }]}>
+      <img src={src} srcset={srcset} alt={logo.alt} width={width} height={height} decoding="async" fetchpriority="high" />
+    </span>
+  ) : (
+    <span class:list={['wordmark', `wordmark--${surface}`]} title="Temporary wordmark — replace with the official logo">
+      <span class="wordmark__name">ON-QUEUE <span class="wordmark__ai">AI</span></span>
+      <span class="wordmark__tag" aria-hidden="true">Temp logo</span>
+      <span class="sr-only">{site.brandName}</span>
+    </span>
+  )
+}
+
+<style>
+  .logo { display: inline-flex; align-items: center; }
+  .logo img { display: block; max-width: none; }
+  /* Clean white panel for the white-background artwork on dark surfaces.
+*/
+  .logo--plate {
+    background: #fff;
+    padding: 6px 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 4px 14px -6px rgba(0, 0, 0, 0.5);
+  }
+
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .wordmark__name { line-height: 1; }
+  .wordmark--dark .wordmark__name { color: var(--warm-white); }
+  .wordmark--light .wordmark__name { color: var(--brand-navy); }
+  .wordmark__ai { color: var(--brand-gold); }
+  .wordmark--light .wordmark__ai { color: var(--brand-blue); }
+  .wordmark__tag {
+    font-family: var(--font-body);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px dashed currentColor;
+    border-radius: 4px;
+    padding: 2px 5px;
+    line-height: 1.2;
+  }
+  .wordmark--dark .wordmark__tag { color: var(--muted-on-dark); }
+  .wordmark--light .wordmark__tag { color: var(--gray); }
+</style>
