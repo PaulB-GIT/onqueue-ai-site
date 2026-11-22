@@ -56,6 +56,6 @@ const { eyebrow, title, intro, secondary } = Astro.props;
   /* Quiet version of the homepage light beam, gliding back and forth along the line */
   .page-hero__beam { stroke-dasharray: 8 92; animation: ph-run 9s ease-in-out infinite alternate; opacity: 0.8; }
   @keyframes ph-run { from { stroke-dashoffset: 108; } to { stroke-dashoffset: 0; } }
-  @media (prefers-reduced-motion: reduce) { .page-hero__beam { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .page-hero__beam { animation: ph-run 18s ease-in-out infinite alternate !important; animation-duration: 18s !important; animation-iteration-count: infinite !important; } }
   .page-hero__wave { position: absolute; left: 0; right: 0; bottom: 8%; width: 100%; height: 120px; }
 </style>

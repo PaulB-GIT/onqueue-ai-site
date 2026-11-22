@@ -107,7 +107,8 @@ const nodes = [
       bar.animate(lit, { duration: cycle, iterations: Infinity });
     });
 
-    if (beam && !reduce) {
+    // The beam always travels. With "Reduce motion" turned on it simply moves more slowly.
+    if (beam) {
       beam.animate(
         [
           { offset: 0, transform: `translateX(${X0}px) scaleX(1)` },
@@ -115,7 +116,7 @@ const nodes = [
           { offset: 0.5, transform: `translateX(${X1}px) scaleX(-1)` },
           { offset: 1, transform: `translateX(${X0}px) scaleX(-1)` },
         ],
-        { duration: cycle, iterations: Infinity, easing: 'linear' }
+        { duration: reduce ? cycle * 2 : cycle, iterations: Infinity, easing: 'linear' }
       );
     }
   }
@@ -316,14 +317,18 @@ const nodes = [
   .vi--js .vi__bar, .vi--js .vi__beam { animation: none !important; }
 
   @media (prefers-reduced-motion: reduce) {
-    .vi__beam, .vi__node, .vi__orbiter, .vi__signal, .vi__step { animation: none !important; }
+    .vi__node, .vi__orbiter, .vi__signal, .vi__step { animation: none !important; }
+    .vi__beam {
+      animation: vi-sweep 12s linear infinite alternate !important;
+      animation-duration: 12s !important;
+      animation-iteration-count: infinite !important;
+    }
     .vi__bar {
       animation: vi-bar-soft 3.6s ease-in-out var(--delay, 0s) infinite alternate !important;
       animation-duration: 3.6s !important;
       animation-iteration-count: infinite !important;
       filter: none;
     }
-    .vi__beam { transform: translateX(150px); }
     .vi__orbiter { offset-distance: 20%; }
   }
 </style>
