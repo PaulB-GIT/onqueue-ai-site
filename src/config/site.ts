@@ -14,6 +14,14 @@ export const site = {
   demoEmailSubject: 'ON-QUEUE AI Demo Request',
 
   /**
+   * Client Portal — a plain link to the separate ON-QUEUE AI portal app.
+   * Shown as a button in the header, inside the mobile menu, and in the footer.
+   * This website has no login of its own. Set to `null` to hide the button.
+   */
+  portalUrl: 'https://ai.portal.onqueueva.com/login' as string | null,
+  portalLabel: 'Client Portal',
+
+  /**
    * Search engines.
    * Keep `false` while you review previews. Change to `true` only when the
    * site is approved and live on its real domain.
