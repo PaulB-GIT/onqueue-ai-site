@@ -6,6 +6,7 @@ import SectionHeading from '../components/SectionHeading.astro';
 import ServiceCard from '../components/ServiceCard.astro';
 import VoiceInterface from '../components/VoiceInterface.astro';
 import Conversation from '../components/Conversation.astro';
+import ServiceShowcase from '../components/ServiceShowcase.astro';
 import DemoRequest from '../components/DemoRequest.astro';
 import { demoHref } from '../config/site';
 import { meta, hero, services, conversation, industries, humanSupport } from '../data/home';
@@ -43,6 +44,9 @@ import { meta, hero, services, conversation, industries, humanSupport } from '..
       <p class="note services-note">{services.note}</p>
     </div>
   </section>
+
+  <!-- B2: Sample calls showcase (clickable services, auto slideshow) -->
+  <ServiceShowcase />
 
   <!-- C: Illustrative conversation -->
   <section class="section surface-dark convo-section" aria-labelledby="convo-title">
@@ -104,10 +108,7 @@ import { meta, hero, services, conversation, industries, humanSupport } from '..
             <rect x="330" y="50" width="70" height="60" rx="14" />
             <rect x="330" y="190" width="70" height="60" rx="14" />
           </g>
-          <circle cx="210" cy="150" r="30" fill="#071B33" />
-          <g stroke="#EDBF0C" stroke-width="3" stroke-linecap="round">
-            <path d="M196 144v12M203 138v24M210 132v36M217 140v20M224 146v8" />
-          </g>
+          <image href="/brand/ai-emblem-144.png" x="180" y="120" width="60" height="60" />
           <g fill="none" stroke="#0A4889" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M44 136h6l3 8-4 2.6a22 22 0 0 0 10 10l2.6-4 8 3.2V162a4 4 0 0 1-4 4A30 30 0 0 1 40 140a4 4 0 0 1 4-4Z" />
             <path d="m352 80 6 6 12-12" />
