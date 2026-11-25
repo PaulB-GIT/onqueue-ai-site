@@ -1,0 +1,692 @@
+---
+/**
+ * Sample calls showcase: a layered "call card" with one illustrative script per
+ * service. Tabs are clickable; the slideshow advances on its own and can be paused.
+ * No audio, no live data. Copy lives in src/data/home.ts (`showcase`).
+ * No inline style="" attributes (a strict CSP would block them); motion is set
+ * from the script through CSS custom properties.
+ */
+import Icon from './Icon.astro';
+import SectionHeading from './SectionHeading.astro';
+import { showcase } from '../data/home';
+
+const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+---
+<section class="section surface-dark showcase" aria-labelledby="showcase-title" data-showcase data-seconds={showcase.slideSeconds}>
+  <div class="tech-grid" aria-hidden="true"></div>
+  <div class="showcase__glow showcase__glow--a" aria-hidden="true"></div>
+  <div class="showcase__glow showcase__glow--b" aria-hidden="true"></div>
+
+  <div class="container showcase__inner">
+    <SectionHeading id="showcase-title" eyebrow={showcase.eyebrow} title={showcase.title} intro={showcase.intro} align="center" />
+
+    <div class="showcase__scene" data-scene>
+      <div class="showcase__ghost showcase__ghost--2" aria-hidden="true"></div>
+      <div class="showcase__ghost showcase__ghost--1" aria-hidden="true"></div>
+
+      <div class="callcard" data-card>
+        <div class="callcard__glare" aria-hidden="true"></div>
+        <div class="callcard__panels">
+          {showcase.items.map((item, i) => (
+            <div
+              class:list={['callpanel', { 'is-active': i === 0 }]}
+              id={`sc-panel-${item.id}`}
+              role="tabpanel"
+              aria-labelledby={`sc-tab-${item.id}`}
+              tabindex="0"
+              data-panel
+              data-start={item.startAt}
+              data-label={item.recording ? 'Recorded test call, not a live customer call' : showcase.label}
+            >
+              <div class="callpanel__head">
+                <span class="callpanel__live" aria-hidden="true"></span>
+                <span class="callpanel__service"><Icon name={item.icon} size={20} />{item.tab}</span>
+                <span class="callpanel__speaking" aria-hidden="true">
+                  <span class="callpanel__eq"><i></i><i></i><i></i></span>
+                  Speaking
+                </span>
+                <span class="callpanel__timer" aria-hidden="true" data-timer>{fmt(item.startAt)}</span>
+              </div>
+
+              {item.recording ? (
+                <div class="rec" data-rec>
+                  <div class="player">
+                    <button class="player__btn" type="button" data-rec-play aria-label={`Play sample call: ${item.tab}`}>
+                      <span class="player__icon-play"><Icon name="play" size={20} /></span>
+                      <span class="player__icon-pause"><Icon name="pause" size={20} /></span>
+                    </button>
+                    <div class="player__body">
+                      <div class="player__top">
+                        <span class="player__title">Listen to a sample call</span>
+                        <span class="player__time" data-rec-time>0:00</span>
+                      </div>
+                      <input class="player__seek" type="range" min="0" max="100" step="0.1" value="0" data-rec-seek aria-label={`Seek in sample call: ${item.tab}`} />
+                    </div>
+                    <audio preload="metadata" src={item.recording.src} data-rec-audio></audio>
+                  </div>
+                  <p class="rec__note">{item.recording.note}</p>
+                  <div class="transcript" data-rec-scroll tabindex="0" aria-label={`Transcript: ${item.tab} sample call`}>
+                    <ol class="callpanel__lines">
+                      {item.recording.transcript.map((line) => (
+                        <li class:list={['line', `line--${line.speaker}`, 'line--timed']} data-at={line.at}>
+                          {line.speaker === 'agent' ? (
+                            <span class="avatar avatar--agent" aria-hidden="true"><img class="avatar__emblem" src="/brand/ai-emblem-72.png" srcset="/brand/ai-emblem-108.png 1.5x, /brand/ai-emblem-144.png 2x" width="44" height="44" alt="" loading="lazy" decoding="async" /></span>
+                          ) : (
+                            <span class="avatar avatar--caller" aria-hidden="true">{item.caller}</span>
+                          )}
+                          <p><span class="sr-only">{line.speaker === 'agent' ? 'Agent: ' : 'Caller: '}</span>{line.text}</p>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                  <p class="result"><Icon name={item.icon} size={20} /><span><span class="sr-only">Outcome: </span>{item.result}</span></p>
+                </div>
+              ) : (
+                <ol class="callpanel__lines">
+                  {item.lines.map((line) => (
+                    <li class:list={['line', `line--${line.speaker}`]} data-step>
+                      {line.speaker === 'agent' ? (
+                        <span class="avatar avatar--agent" aria-hidden="true"><img class="avatar__emblem" src="/brand/ai-emblem-72.png" srcset="/brand/ai-emblem-108.png 1.5x, /brand/ai-emblem-144.png 2x" width="44" height="44" alt="" loading="lazy" decoding="async" /></span>
+                      ) : (
+                        <span class="avatar avatar--caller" aria-hidden="true">{item.caller}</span>
+                      )}
+                      <p><span class="sr-only">{line.speaker === 'agent' ? 'AI agent: ' : 'Caller: '}</span>{line.text}</p>
+                    </li>
+                  ))}
+                  <li class="line line--agent line--result" data-step>
+                    <span class="avatar avatar--agent" aria-hidden="true"><img class="avatar__emblem" src="/brand/ai-emblem-72.png" srcset="/brand/ai-emblem-108.png 1.5x, /brand/ai-emblem-144.png 2x" width="44" height="44" alt="" loading="lazy" decoding="async" /></span>
+                    <p class="result"><Icon name={item.icon} size={20} /><span><span class="sr-only">Outcome: </span>{item.result}</span></p>
+                  </li>
+                </ol>
+              )}
+
+              <ul class="callpanel__chips" aria-label="Call steps">
+                {item.chips.map((chip) => (
+                  <li class="chip" data-step><Icon name={chip.icon} size={18} />{chip.label}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div class="callcard__foot">
+          <span class="callcard__label" data-card-label>{showcase.items[0].recording ? 'Recorded test call, not a live customer call' : showcase.label}</span>
+          <button class="callcard__toggle" type="button" data-toggle hidden aria-pressed="false">
+            <span class="callcard__toggle-pause"><Icon name="pause" size={16} /></span>
+            <span class="callcard__toggle-play"><Icon name="play" size={16} /></span>
+            <span data-toggle-label>Pause slideshow</span>
+          </button>
+        </div>
+        <div class="callcard__progress" aria-hidden="true"><span data-progress></span></div>
+      </div>
+    </div>
+
+    <div class="showcase__tabs" role="tablist" aria-label="Services" data-tablist hidden>
+      {showcase.items.map((item, i) => (
+        <button
+          class="stab"
+          type="button"
+          role="tab"
+          id={`sc-tab-${item.id}`}
+          aria-controls={`sc-panel-${item.id}`}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          tabindex={i === 0 ? '0' : '-1'}
+          data-tab
+        >
+          <span class="stab__icon"><Icon name={item.icon} size={22} /></span>
+          <span class="stab__label">{item.tab}</span>
+          <span class="stab__bar" aria-hidden="true"></span>
+        </button>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .showcase {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 60% 70% at 50% 45%, rgba(10, 72, 137, 0.55), transparent 70%),
+      linear-gradient(180deg, var(--navy-900), var(--brand-navy) 40%, var(--navy-900));
+    border-bottom: 1px solid var(--line-dark);
+  }
+  .showcase__inner { position: relative; }
+  .showcase__glow {
+    position: absolute;
+    width: 46vmax; height: 46vmax;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  .showcase__glow--a { left: -18vmax; top: 10%; background: radial-gradient(circle, rgba(10, 72, 137, 0.9), transparent 65%); }
+  .showcase__glow--b { right: -20vmax; bottom: -10%; background: radial-gradient(circle, rgba(237, 191, 12, 0.22), transparent 60%); }
+
+  /* ── 3D scene ── */
+  .showcase__scene {
+    --rx: 0deg; --ry: 0deg; --gx: 30%; --gy: 0%;
+    position: relative;
+    max-width: 1000px;
+    margin-inline: auto;
+    perspective: 1600px;
+    perspective-origin: 50% 30%;
+  }
+  .showcase__ghost {
+    position: absolute;
+    inset: 0;
+    border-radius: 26px;
+    border: 1px solid rgba(143, 179, 221, 0.14);
+    background: linear-gradient(160deg, rgba(18, 53, 92, 0.55), rgba(7, 27, 51, 0.6));
+    pointer-events: none;
+  }
+  .showcase__ghost--1 { transform: translateY(30px) scale(0.955); opacity: 0.75; }
+  .showcase__ghost--2 { transform: translateY(58px) scale(0.91); opacity: 0.45; }
+  /* Gentle floating motion so the card feels suspended in space */
+  .showcase__scene { animation: sc-float 7s ease-in-out infinite; }
+  .showcase__scene:hover { animation-play-state: paused; }
+
+  .callcard {
+    position: relative;
+    border-radius: 26px;
+    padding: clamp(1.1rem, 0.6rem + 2vw, 2rem) clamp(1rem, 0.5rem + 2vw, 2.1rem) 0;
+    background:
+      linear-gradient(160deg, rgba(31, 62, 104, 0.92) 0%, rgba(16, 40, 72, 0.95) 45%, rgba(9, 28, 52, 0.97) 100%);
+    border: 1px solid rgba(237, 191, 12, 0.32);
+    box-shadow:
+      0 0 0 1px rgba(10, 72, 137, 0.6) inset,
+      0 1px 0 rgba(255, 255, 255, 0.12) inset,
+      0 0 40px -6px rgba(10, 72, 137, 0.75),
+      0 50px 90px -30px rgba(0, 0, 0, 0.75),
+      0 18px 36px -18px rgba(0, 0, 0, 0.6);
+    transform: rotateX(var(--rx)) rotateY(var(--ry));
+    transform-style: preserve-3d;
+    transition: transform 0.6s var(--ease), box-shadow 0.4s var(--ease);
+    overflow: hidden;
+  }
+  .callcard::before { /* top light edge */
+    content: '';
+    position: absolute;
+    inset: 0 10% auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  }
+  .callcard__glare {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(600px circle at var(--gx) var(--gy), rgba(255, 255, 255, 0.09), transparent 45%);
+    transition: opacity 0.4s var(--ease);
+  }
+
+  .callcard__panels { display: grid; }
+  .callpanel { grid-area: 1 / 1; min-width: 0; }
+  .callpanel:focus-visible { outline: 3px solid var(--brand-gold); outline-offset: 6px; border-radius: 12px; }
+  /* With JavaScript, only the active panel shows. Without it, all scripts are listed. */
+  :global(.js) .callpanel { visibility: hidden; opacity: 0; transform: translateX(28px) translateZ(0); transition: opacity 0.55s var(--ease), transform 0.65s var(--ease), visibility 0s linear 0.65s; }
+  :global(.js) .callpanel.is-leaving { transform: translateX(-28px); }
+  :global(.js) .callpanel.is-active { visibility: visible; opacity: 1; transform: none; transition: opacity 0.55s var(--ease) 0.1s, transform 0.65s var(--ease) 0.1s, visibility 0s; }
+  .callpanel + .callpanel { margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--line-dark); }
+  :global(.js) .callpanel + .callpanel { margin-top: 0; padding-top: 0; border-top: 0; }
+
+  .callpanel__head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.1rem;
+    margin-bottom: var(--space-5);
+  }
+  .callpanel__live {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--brand-gold);
+    box-shadow: 0 0 0 4px rgba(237, 191, 12, 0.15), 0 0 14px rgba(237, 191, 12, 0.8);
+    animation: sc-pulse 1.8s ease-in-out infinite;
+  }
+  .callpanel__service {
+    display: inline-flex; align-items: center; gap: 0.55rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.05rem, 0.95rem + 0.5vw, 1.35rem);
+    color: var(--brand-gold);
+    text-shadow: 0 0 18px rgba(237, 191, 12, 0.35);
+  }
+  .callpanel__speaking { display: inline-flex; align-items: center; gap: 0.5rem; color: #a9b8cc; font-weight: 600; font-size: var(--text-sm); }
+  .callpanel__eq { display: inline-flex; align-items: center; gap: 3px; height: 18px; }
+  .callpanel__eq i { width: 4px; height: 100%; border-radius: 2px; background: var(--brand-gold); transform-origin: 50% 50%; animation: sc-eq 0.9s ease-in-out infinite; }
+  .callpanel__eq i:nth-child(2) { animation-delay: -0.3s; animation-duration: 0.75s; }
+  .callpanel__eq i:nth-child(3) { animation-delay: -0.55s; animation-duration: 1.05s; }
+  .callpanel__timer { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 600; font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem); color: #b8c4d6; letter-spacing: 0.04em; }
+
+  .callpanel__lines { list-style: none; display: grid; gap: var(--space-4); min-height: 0; }
+  .line { display: grid; grid-template-columns: 52px 1fr; gap: var(--space-4); align-items: start; }
+  .line p { margin: 0; color: var(--warm-white); font-size: clamp(1rem, 0.94rem + 0.3vw, 1.2rem); line-height: 1.55; padding-top: 0.6rem; }
+  .line--caller p { color: #e2e8f0; }
+
+  .avatar {
+    position: relative;
+    display: grid; place-items: center;
+    width: 52px; height: 52px; border-radius: 50%;
+    font-weight: 700; font-size: 0.95rem;
+  }
+  .avatar--agent { background: none; }
+  .avatar__emblem {
+    display: block;
+    width: 44px; height: 44px;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 10px rgba(237, 191, 12, 0.35));
+  }
+  .avatar--agent::after { /* rotating ring */
+    content: '';
+    position: absolute; inset: -7px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--brand-gold) 0 22%, transparent 22% 55%, var(--brand-blue) 55% 80%, transparent 80%);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+            mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+    animation: sc-spin 3.2s linear infinite;
+  }
+  .avatar--caller {
+    color: var(--warm-white);
+    background: linear-gradient(160deg, #2a4a72, #16304f);
+    border: 1px solid rgba(184, 196, 214, 0.35);
+    box-shadow: 0 8px 18px -8px rgba(0, 0, 0, 0.6);
+  }
+
+  .result {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.8rem 1.2rem !important;
+    border-radius: 14px;
+    color: #f4dc7a !important;
+    background: linear-gradient(135deg, rgba(237, 191, 12, 0.14), rgba(237, 191, 12, 0.05));
+    border: 1px solid rgba(237, 191, 12, 0.45);
+    box-shadow: 0 0 24px -8px rgba(237, 191, 12, 0.45), 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  }
+  .result :global(.icon) { flex: none; color: var(--brand-gold); }
+
+  .callpanel__chips {
+    list-style: none;
+    display: flex; flex-wrap: wrap; gap: 0.6rem;
+    margin-top: var(--space-5);
+    padding-top: var(--space-5);
+    border-top: 1px solid rgba(184, 196, 214, 0.18);
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    padding: 0.55rem 1.05rem;
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-sm);
+    color: var(--brand-navy);
+    background: linear-gradient(180deg, #ffd84a, var(--brand-gold) 60%, #d8ad06);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset, 0 -2px 0 rgba(0, 0, 0, 0.12) inset, 0 8px 18px -8px rgba(237, 191, 12, 0.7);
+  }
+
+  /* Step-by-step reveal (only with JS and when the panel is playing) */
+  :global(.js) .callpanel [data-step] { opacity: 0; transform: translateY(10px) scale(0.98); transition: opacity 0.45s var(--ease), transform 0.5s var(--ease); }
+  :global(.js) .callpanel [data-step].is-shown { opacity: 1; transform: none; }
+
+  .callcard__foot {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+    gap: var(--space-3);
+    padding-block: var(--space-4) var(--space-4);
+  }
+  .callcard__label { font-size: var(--text-xs); font-weight: 600; color: #a9b8cc; letter-spacing: 0.02em; }
+  .callcard__toggle {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    min-height: 40px;
+    padding: 0 0.9rem;
+    border-radius: 999px;
+    border: 1px solid rgba(184, 196, 214, 0.3);
+    background: rgba(7, 27, 51, 0.5);
+    color: var(--warm-white);
+    font: inherit; font-size: var(--text-xs); font-weight: 600;
+    cursor: pointer;
+  }
+  .callcard__toggle:hover { border-color: var(--brand-gold); }
+  .callcard__toggle-play { display: none; }
+  .callcard__toggle[aria-pressed='true'] .callcard__toggle-play { display: inline-flex; }
+  .callcard__toggle[aria-pressed='true'] .callcard__toggle-pause { display: none; }
+  .callcard__toggle :global(.icon) { color: var(--brand-gold); }
+  .callcard__progress { height: 4px; margin-inline: calc(-1 * clamp(1rem, 0.5rem + 2vw, 2.1rem)); background: rgba(184, 196, 214, 0.12); }
+  .callcard__progress span {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, #c99e00, var(--brand-gold), #ffe680);
+    box-shadow: 0 0 12px rgba(237, 191, 12, 0.8);
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+  }
+
+
+  /* ── Sample-call audio player + timed transcript ── */
+  .rec { display: grid; gap: var(--space-4); }
+  .player {
+    display: flex; align-items: center; gap: var(--space-4);
+    padding: 0.75rem 1rem;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(7, 27, 51, 0.75), rgba(18, 53, 92, 0.6));
+    border: 1px solid rgba(237, 191, 12, 0.35);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.07) inset, 0 12px 26px -16px rgba(0, 0, 0, 0.8);
+  }
+  .player__btn {
+    flex: none;
+    display: grid; place-items: center;
+    width: 52px; height: 52px; border-radius: 50%;
+    border: 0;
+    color: var(--brand-navy);
+    background: radial-gradient(circle at 35% 30%, #ffe680, var(--brand-gold) 55%, #c99e00);
+    box-shadow: 0 8px 18px -6px rgba(237, 191, 12, 0.7), 0 0 0 4px rgba(237, 191, 12, 0.12);
+    cursor: pointer;
+    transition: transform 0.2s var(--ease);
+  }
+  .player__btn:hover { transform: scale(1.06); }
+  .player__icon-pause { display: none; }
+  .rec.is-playing .player__icon-pause { display: inline-flex; }
+  .rec.is-playing .player__icon-play { display: none; }
+  .player__body { flex: 1; min-width: 0; display: grid; gap: 0.45rem; }
+  .player__top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 var(--space-3); font-size: var(--text-sm); }
+  .player__title { font-weight: 700; color: var(--warm-white); font-family: var(--font-display); }
+  .player__time { font-variant-numeric: tabular-nums; color: #b8c4d6; white-space: nowrap; }
+  .player__seek { width: 100%; accent-color: var(--brand-gold); height: 24px; margin: 0; cursor: pointer; }
+  .rec__note { margin: 0; font-size: var(--text-xs); color: #a9b8cc; }
+  .transcript {
+    position: relative;
+    max-height: 160px;
+    overflow-y: auto;
+    padding: 0.5rem 0.75rem 0.5rem 0.25rem;
+    border-radius: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(237, 191, 12, 0.5) transparent;
+    -webkit-mask: linear-gradient(180deg, transparent, #000 18px, #000 calc(100% - 18px), transparent);
+            mask: linear-gradient(180deg, transparent, #000 18px, #000 calc(100% - 18px), transparent);
+  }
+  .transcript:focus-visible { outline: 3px solid var(--brand-gold); outline-offset: 2px; }
+  .line--timed { padding: 0.35rem 0.5rem; border-radius: 12px; transition: background 0.3s var(--ease), opacity 0.3s var(--ease); }
+  .rec.has-started .line--timed { opacity: 0.55; }
+  .rec.has-started .line--timed.is-current {
+    opacity: 1;
+    background: linear-gradient(90deg, rgba(237, 191, 12, 0.14), rgba(237, 191, 12, 0.02));
+    box-shadow: inset 3px 0 0 var(--brand-gold);
+  }
+  .rec.has-started .line--timed.is-past { opacity: 0.85; }
+
+  /* ── Service tabs ── */
+  .showcase__tabs {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--space-3);
+    max-width: 1100px;
+    margin: clamp(3.5rem, 2.5rem + 2vw, 4.5rem) auto 0;
+  }
+  .showcase__tabs[hidden] { display: none !important; }
+  .stab {
+    position: relative;
+    display: flex; align-items: center; gap: 0.8rem;
+    min-height: 76px;
+    padding: 0.8rem 1rem;
+    border-radius: 18px;
+    border: 1px solid rgba(143, 179, 221, 0.2);
+    background: linear-gradient(160deg, rgba(26, 55, 94, 0.75), rgba(10, 30, 56, 0.85));
+    color: var(--warm-white);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-sm);
+    line-height: 1.25;
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: 0 14px 28px -18px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.07) inset;
+    transition: transform 0.35s var(--ease), border-color 0.3s var(--ease), box-shadow 0.35s var(--ease), background 0.3s var(--ease);
+  }
+  .stab:hover { transform: translateY(-4px); border-color: rgba(237, 191, 12, 0.45); box-shadow: 0 22px 34px -18px rgba(0, 0, 0, 0.85), 0 0 22px -10px rgba(237, 191, 12, 0.6); }
+  .stab__icon {
+    flex: none;
+    display: grid; place-items: center;
+    width: 46px; height: 46px; border-radius: 12px;
+    color: var(--brand-gold);
+    background: rgba(237, 191, 12, 0.08);
+    border: 1px solid rgba(237, 191, 12, 0.3);
+    transition: background 0.3s var(--ease), color 0.3s var(--ease);
+  }
+  .stab[aria-selected='true'] {
+    border-color: rgba(237, 191, 12, 0.75);
+    background: linear-gradient(160deg, rgba(48, 70, 92, 0.9), rgba(20, 38, 60, 0.92));
+    box-shadow: 0 0 0 1px rgba(237, 191, 12, 0.25) inset, 0 0 28px -8px rgba(237, 191, 12, 0.55), 0 22px 34px -18px rgba(0, 0, 0, 0.85);
+    transform: translateY(-4px);
+  }
+  .stab[aria-selected='true'] .stab__icon {
+    color: var(--brand-navy);
+    background: linear-gradient(180deg, #ffd84a, var(--brand-gold));
+    box-shadow: 0 6px 16px -6px rgba(237, 191, 12, 0.8);
+  }
+  .stab__bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--brand-gold); transform: scaleX(0); transform-origin: 0 50%; }
+  .stab[aria-selected='true'] .stab__bar { transform: scaleX(var(--p, 0)); }
+
+  @keyframes sc-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+  @keyframes sc-pulse { 50% { box-shadow: 0 0 0 7px rgba(237, 191, 12, 0.05), 0 0 20px rgba(237, 191, 12, 1); } }
+  @keyframes sc-eq { 0%, 100% { transform: scaleY(0.35); } 50% { transform: scaleY(1); } }
+  @keyframes sc-spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 1024px) {
+    .stab { flex-direction: column; align-items: flex-start; gap: 0.55rem; min-height: 112px; }
+  }
+  @media (max-width: 760px) {
+    /* Swipeable row of tabs on small screens */
+    .showcase__tabs {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      margin-inline: calc(-1 * var(--gutter));
+      padding: 8px var(--gutter) 14px;
+      scrollbar-width: none;
+    }
+    .showcase__tabs::-webkit-scrollbar { display: none; }
+    .stab { flex: 0 0 64%; scroll-snap-align: center; flex-direction: row; align-items: center; min-height: 72px; }
+    .line { grid-template-columns: 40px 1fr; gap: var(--space-3); }
+    .avatar { width: 40px; height: 40px; font-size: 0.8rem; }
+    .avatar__emblem { width: 34px; height: 34px; }
+    .line p { padding-top: 0.35rem; }
+    .result { padding: 0.65rem 0.85rem !important; }
+    .callpanel__timer { margin-left: 0; }
+    .chip { padding: 0.45rem 0.8rem; font-size: var(--text-xs); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .callcard { transition: none; }
+    .showcase__scene { animation: none; }
+    .callpanel__live, .avatar--agent::after { animation: none; }
+    .callpanel__eq i { animation-duration: 2.4s; }
+    :global(.js) .callpanel, :global(.js) .callpanel.is-active, :global(.js) .callpanel.is-leaving { transform: none; }
+    :global(.js) .callpanel [data-step] { transform: none; }
+    .stab, .stab:hover, .stab[aria-selected='true'] { transform: none; }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-showcase]');
+  if (root) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-tab]')];
+    const panels = [...root.querySelectorAll<HTMLElement>('[data-panel]')];
+    const tablist = root.querySelector<HTMLElement>('[data-tablist]')!;
+    const toggle = root.querySelector<HTMLButtonElement>('[data-toggle]')!;
+    const toggleLabel = root.querySelector<HTMLElement>('[data-toggle-label]')!;
+    const progress = root.querySelector<HTMLElement>('[data-progress]')!;
+    const scene = root.querySelector<HTMLElement>('[data-scene]')!;
+    const card = root.querySelector<HTMLElement>('[data-card]')!;
+    const DURATION = (Number(root.dataset.seconds) || 10) * 1000;
+    const STEP_GAP = reduce ? 0 : 1100; // time between lines appearing
+    const CHIP_GAP = reduce ? 0 : 280;
+
+    tablist.hidden = false;
+    toggle.hidden = false;
+    // Without JS each panel is labelled by its tab; tabs only exist with JS.
+
+    let index = 0;
+    let shownT = 0;     // drives the script reveal (keeps running while hovered)
+    let progressT = 0;  // drives autoplay (pauses on hover, focus or the Pause button)
+    let userPaused = false, hoverPaused = false, focusPaused = false, visible = true, audioPlaying = false;
+    let last = performance.now();
+
+    const schedule = (panel: HTMLElement) => {
+      const steps = [...panel.querySelectorAll<HTMLElement>('[data-step]')];
+      let t = 300, prevChip = false;
+      return steps.map((el) => {
+        const isChip = el.classList.contains('chip');
+        t += isChip ? (prevChip ? CHIP_GAP : STEP_GAP * 0.6) : (el === steps[0] ? 0 : STEP_GAP);
+        prevChip = isChip;
+        return { el, at: reduce ? 0 : t };
+      });
+    };
+    let steps = schedule(panels[0]);
+    const timer = () => panels[index].querySelector<HTMLElement>('[data-timer]')!;
+    const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
+    const show = (next: number, focusTab = false) => {
+      next = (next + panels.length) % panels.length;
+      if (next !== index) {
+        const prev = panels[index];
+        prev.classList.remove('is-active');
+        prev.classList.add('is-leaving');
+        window.setTimeout(() => prev.classList.remove('is-leaving'), 700);
+      }
+      panels[index].querySelectorAll('[data-step]').forEach((el) => el.classList.remove('is-shown'));
+      root.querySelectorAll<HTMLAudioElement>('[data-rec-audio]').forEach((a) => { if (!a.paused) a.pause(); });
+      index = next;
+      tabs.forEach((t, i) => {
+        const on = i === index;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        t.style.setProperty('--p', '0');
+      });
+      panels[index].classList.add('is-active');
+      const cardLabel = root.querySelector<HTMLElement>('[data-card-label]');
+      const lbl = panels[index].dataset.label; if (cardLabel && lbl) cardLabel.textContent = lbl;
+      panels[index].querySelectorAll('[data-step]').forEach((el) => el.classList.remove('is-shown'));
+      steps = schedule(panels[index]);
+      shownT = 0; progressT = 0;
+      if (focusTab) tabs[index].focus();
+      // Keep the active tab in view in the swipeable mobile row
+      const tab = tabs[index];
+      const row = tablist;
+      if (row.scrollWidth > row.clientWidth) {
+        row.scrollTo({ left: tab.offsetLeft - (row.clientWidth - tab.offsetWidth) / 2, behavior: reduce ? 'auto' : 'smooth' });
+      }
+    };
+
+    const paused = () => userPaused || hoverPaused || focusPaused || !visible || audioPlaying;
+
+    const tick = (now: number) => {
+      const dt = Math.min(now - last, 100);
+      last = now;
+      shownT += dt;
+      if (!paused()) progressT += dt;
+      for (const s of steps) if (s.at <= shownT) s.el.classList.add('is-shown');
+      const start = Number(panels[index].dataset.start) || 0;
+      const t = timer();
+      const rec = panels[index].querySelector<HTMLElement>('[data-rec]');
+      const recAudio = rec?.classList.contains('has-started') ? rec.querySelector<HTMLAudioElement>('audio') : null;
+      const txt = recAudio ? fmt(Math.floor(recAudio.currentTime)) : fmt(start + Math.floor(shownT / 1000));
+      if (t.textContent !== txt) t.textContent = txt;
+      const p = Math.min(progressT / DURATION, 1);
+      progress.style.transform = `scaleX(${p})`;
+      tabs[index].style.setProperty('--p', String(p));
+      if (progressT >= DURATION) show(index + 1);
+      requestAnimationFrame(tick);
+    };
+    // Sample-call recordings: play/pause, seek, and a transcript that follows the audio
+    const clock = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
+    root.querySelectorAll<HTMLElement>('[data-rec]').forEach((rec) => {
+      const audio = rec.querySelector<HTMLAudioElement>('[data-rec-audio]')!;
+      const btn = rec.querySelector<HTMLButtonElement>('[data-rec-play]')!;
+      const seek = rec.querySelector<HTMLInputElement>('[data-rec-seek]')!;
+      const time = rec.querySelector<HTMLElement>('[data-rec-time]')!;
+      const box = rec.querySelector<HTMLElement>('[data-rec-scroll]')!;
+      const lines = [...rec.querySelectorAll<HTMLElement>('[data-at]')];
+      const label = btn.getAttribute('aria-label') || '';
+      let current = -1, seeking = false;
+      const render = () => {
+        const d = audio.duration || 0, t = audio.currentTime;
+        if (!seeking && d) seek.value = String((t / d) * 100);
+        time.textContent = d ? `${clock(t)} / ${clock(d)}` : clock(t);
+        seek.setAttribute('aria-valuetext', `${clock(t)} of ${clock(d)}`);
+        let i = -1;
+        lines.forEach((l, n) => { if (Number(l.dataset.at) <= t + 0.05) i = n; });
+        if (i !== current) {
+          current = i;
+          lines.forEach((l, n) => { l.classList.toggle('is-current', n === i); l.classList.toggle('is-past', n < i); });
+          const el = lines[i];
+          if (el) box.scrollTo({ top: el.offsetTop - box.clientHeight / 2 + el.offsetHeight / 2, behavior: reduce ? 'auto' : 'smooth' });
+        }
+      };
+      btn.addEventListener('click', () => { if (audio.paused) audio.play(); else audio.pause(); });
+      audio.addEventListener('play', () => {
+        root.querySelectorAll<HTMLAudioElement>('[data-rec-audio]').forEach((a) => { if (a !== audio) a.pause(); });
+        rec.classList.add('is-playing', 'has-started');
+        btn.setAttribute('aria-label', label.replace('Play', 'Pause'));
+        audioPlaying = true;
+      });
+      const stop = () => { rec.classList.remove('is-playing'); btn.setAttribute('aria-label', label); audioPlaying = false; };
+      audio.addEventListener('pause', stop);
+      audio.addEventListener('ended', () => { stop(); progressT = 0; });
+      audio.addEventListener('timeupdate', render);
+      audio.addEventListener('loadedmetadata', render);
+      seek.addEventListener('input', () => {
+        seeking = true;
+        if (audio.duration) { audio.currentTime = (Number(seek.value) / 100) * audio.duration; rec.classList.add('has-started'); }
+        render();
+        seeking = false;
+      });
+    });
+
+    show(0);
+    requestAnimationFrame(tick);
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => show(i));
+      tab.addEventListener('keydown', (e) => {
+        const k = e.key;
+        if (k === 'ArrowRight' || k === 'ArrowDown') { e.preventDefault(); show(index + 1, true); }
+        else if (k === 'ArrowLeft' || k === 'ArrowUp') { e.preventDefault(); show(index - 1, true); }
+        else if (k === 'Home') { e.preventDefault(); show(0, true); }
+        else if (k === 'End') { e.preventDefault(); show(panels.length - 1, true); }
+      });
+    });
+
+    toggle.addEventListener('click', () => {
+      userPaused = !userPaused;
+      toggle.setAttribute('aria-pressed', String(userPaused));
+      toggleLabel.textContent = userPaused ? 'Play slideshow' : 'Pause slideshow';
+    });
+
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (fine) {
+      root.addEventListener('pointerenter', () => { hoverPaused = true; });
+      root.addEventListener('pointerleave', () => { hoverPaused = false; });
+    }
+    root.addEventListener('focusin', () => { focusPaused = true; });
+    root.addEventListener('focusout', (e) => { if (!root.contains(e.relatedTarget as Node)) focusPaused = false; });
+    document.addEventListener('visibilitychange', () => { visible = !document.hidden; });
+
+    // 3D tilt and light that follow the pointer (desktop only, not with Reduce Motion)
+    if (fine && !reduce) {
+      let raf = 0;
+      scene.addEventListener('pointermove', (e) => {
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          scene.style.setProperty('--ry', `${((x - 0.5) * 7).toFixed(2)}deg`);
+          scene.style.setProperty('--rx', `${((0.5 - y) * 5).toFixed(2)}deg`);
+          scene.style.setProperty('--gx', `${(x * 100).toFixed(1)}%`);
+          scene.style.setProperty('--gy', `${(y * 100).toFixed(1)}%`);
+        });
+      });
+      scene.addEventListener('pointerleave', () => {
+        scene.style.setProperty('--rx', '0deg');
+        scene.style.setProperty('--ry', '0deg');
+        scene.style.setProperty('--gx', '30%');
+        scene.style.setProperty('--gy', '0%');
+      });
+    }
+  }
+</script>
