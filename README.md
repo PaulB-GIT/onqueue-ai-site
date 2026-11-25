@@ -18,13 +18,15 @@ The site has no database, no login, no forms, no tracking, and no live calling. 
 
 | You want to change… | Edit this file |
 |---|---|
-| Email, subject line, brand names, Privacy/Terms links, search-engine setting | `src/config/site.ts` |
+| Email, subject line, brand names, Client Portal link (`portalUrl`), Privacy/Terms links, search-engine setting | `src/config/site.ts` |
 | Privacy Policy text | `src/data/privacyPolicy.ts` |
 | The logo | `public/brand/` + the `logo` section in `src/config/site.ts` |
 | Homepage text | `src/data/home.ts` |
 | How It Works text and FAQ | `src/data/howItWorks.ts` |
-| Pricing text | `src/data/pricing.ts` |
+| Pricing text, plan prices, minutes, comparison table and pricing FAQ | `src/data/pricing.ts` |
 | Colors, fonts, spacing | `src/styles/tokens.css` |
+| Browser-tab icon (favicon) | `public/favicon.ico` and the other icon files in `public/`. They are the square icon from the logo. |
+| Sample call recordings (audio player + transcript) | `public/audio/` and `recording` in the `showcase` section of `src/data/home.ts`. Step-by-step: `ADDING-RECORDINGS.md` |
 | Social-share image (shown when the link is shared) | `public/og-image.jpg` (1200 × 630). Its source is `scripts/og.html`. |
 
 You never need to touch the page layout files to change wording.
@@ -188,7 +190,8 @@ onqueue-ai-site/
 ├── .node-version           Node.js version used for testing
 ├── public/
 │   ├── brand/              Web-sized copies of the official logo
-│   ├── favicon.svg
+│   ├── favicon.ico, favicon-16x16.png, favicon-32x32.png   Browser-tab icons
+│   ├── apple-touch-icon.png, android-chrome-*.png, site.webmanifest   Phone home-screen icons
 │   └── og-image.jpg        Share image (1200×630)
 ├── scripts/og.html         Source for the share image
 └── src/
@@ -207,7 +210,7 @@ onqueue-ai-site/
 - **Colors:** brand navy `#071B33` for depth, brand blue `#0A4889` for links and accents on light backgrounds, gold `#EDBF0C` only for buttons, highlights and thin accents (never body text on light backgrounds), warm white `#FAF9F6` for reading areas. Measured contrast: navy on gold 9.9:1, gold on navy 9.9:1, body text on warm white 8.9:1, blue on warm white 8.7:1.
 - **Type:** Manrope (headings) and Inter (body). Both are self-hosted from the project, so no Google Fonts requests are made, with system fonts as a fallback.
 - **AI visuals:** a hand-built SVG waveform, faint grid and circuit lines, and an "Illustrative workflow" interface. Animations are slow, limited to the waveform and a small signal dot, and switch off entirely for visitors who prefer reduced motion.
-- **Honesty:** examples are labelled "Illustrative workflow", "Example conversation — not a live call" and "Example application". There are no testimonials, statistics, prices, certifications, integrations, play buttons or "live" indicators.
+- **Honesty:** examples are labelled "Illustrative workflow", "Example conversation — not a live call" and "Example application". There are no testimonials, statistics, certifications or "live" indicators. Plan prices, minutes and rates appear only on the Pricing page and come from `src/data/pricing.ts`.
 
 ## Security and privacy
 

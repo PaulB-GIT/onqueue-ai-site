@@ -19,6 +19,10 @@ for name, f in pages:
         if st not in inline_styles: inline_styles.append(st)
     for sc in re.findall(r'<script type="module">(.*?)</script>', html, re.S):
         if sc not in scripts: scripts.append(sc)
+    # Larger scripts are emitted as separate files: inline those too
+    for src in re.findall(r'<script type="module" src="([^"]+)"></script>', html):
+        sc = (dist / src.lstrip('/')).read_text()
+        if sc not in scripts: scripts.append(sc)
     if header is None:
         header = re.search(r'<header class="site-header".*?</header>', html, re.S).group(0)
         footer = re.search(r'<footer class="site-footer.*?</footer>', html, re.S).group(0)
@@ -44,6 +48,9 @@ def fix_href(m):
     h = m.group(1)
     return f'href="{route.get(h, h)}"'
 body = re.sub(r'href="([^"]+)"', fix_href, body)
+# Embed sample-call recordings so the single-file preview can play them
+AUDIO_MIME = {'.mp3': 'audio/mpeg', '.m4a': 'audio/mp4', '.wav': 'audio/wav', '.ogg': 'audio/ogg'}
+body = re.sub(r'src="(/audio/[^"]+)"', lambda m: f'src="{b64(dist / m.group(1).lstrip("/"), AUDIO_MIME.get(pathlib.Path(m.group(1)).suffix.lower(), "audio/mpeg"))}"', body)
 body = body.replace(' aria-current="page"', '')
 for img in set(re.findall(r'/brand/[\w.-]+\.png', body)):
     body = body.replace(img, b64(dist / img.lstrip('/'), 'image/png'))
@@ -78,9 +85,11 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 """
 note = '<div class="pv-note">Private preview of the ON-QUEUE AI website. Not published. Email buttons may not open from inside this preview.</div>'
 doc = (f'<title>ON-QUEUE AI Website Preview</title>\n<meta name="robots" content="noindex, nofollow">\n'
-       f'<style>{css}\n{extra_css}</style>\n<script>document.documentElement.classList.add("js");</script>\n'
+       + (f'<link rel="icon" type="image/png" href="{b64(dist / "favicon-32x32.png", "image/png")}">\n' if (dist / "favicon-32x32.png").exists() else '')
+       + f'<style>{css}\n{extra_css}</style>\n<script>document.documentElement.classList.add("js");</script>\n'
        f'<a class="skip-link" href="#main">Skip to content</a>\n{note}\n{body}\n'
        + ''.join(f'<script type="module">{s}</script>' for s in scripts)
        + f'<script>{router}</script>\n')
+doc = re.sub(r'<script type="module" src="[^"]+"></script>', '', doc)
 out.parent.mkdir(parents=True, exist_ok=True); out.write_text(doc)
 print(out, round(len(doc)/1024), 'KB')

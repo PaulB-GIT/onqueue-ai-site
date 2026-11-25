@@ -4,51 +4,87 @@ import PageHero from '../components/PageHero.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import Button from '../components/Button.astro';
 import Icon from '../components/Icon.astro';
+import FAQ from '../components/FAQ.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { demoHref, demoMailto } from '../config/site';
-import { meta, hero, plan, factors, proposal, closing } from '../data/pricing';
+import { meta, hero, plans, plansSection, included, comparison, factors, proposal, faq, closing } from '../data/pricing';
 ---
 <BaseLayout title={meta.title} description={meta.description}>
   <PageHero eyebrow={hero.eyebrow} title={hero.title} intro={hero.text} />
 
-  <!-- Pricing card -->
-  <section class="section surface-light pricing" aria-labelledby="plan-title">
+  <!-- Plan cards -->
+  <section class="section surface-light pricing" aria-labelledby="plans-title">
     <div class="container">
-      <article class="plan">
-        <div class="plan__head">
-          <div class="plan__intro">
-            <p class="eyebrow">One managed service</p>
-            <h2 id="plan-title">{plan.title}</h2>
-            <p class="plan__desc">{plan.description}</p>
-          </div>
-          <div class="plan__price">
-            <p class="plan__price-value">{plan.price}</p>
-            <p class="plan__price-sub">Scoped to your workflow</p>
-            <div class="plan__actions">
+      <SectionHeading id="plans-title" eyebrow={plansSection.eyebrow} title={plansSection.title} align="center" />
+      <div class="plans">
+        {plans.map((p) => (
+          <article class:list={['tier', `tier--${p.id}`]} aria-labelledby={`tier-${p.id}`}>
+            <header class="tier__head">
+              <h3 id={`tier-${p.id}`} class="tier__name">{p.name}</h3>
+              <p class="tier__price"><span class="tier__amount">{p.monthly}</span><span class="tier__per">/month</span></p>
+              <p class="tier__rate">{p.perMinute}</p>
+              <p class="tier__setup">{p.setupLine}</p>
+            </header>
+            <ul class="tier__features">
+              {p.features.map((f) => <li><Icon name="checkCircle" size={20} /><span>{f}</span></li>)}
+            </ul>
+            <div class="tier__actions">
               <Button href={demoHref} size="lg" icon="arrowRight">BOOK A DEMO</Button>
-              <Button href={demoMailto} variant="secondary" size="lg">{plan.secondaryLabel}</Button>
+              <Button href={demoMailto} variant="outline" size="lg">{plansSection.secondaryLabel}</Button>
             </div>
-          </div>
-        </div>
-        <div class="plan__body">
-          <h3 class="plan__components-label">{plan.componentsLabel}</h3>
-          <ul class="plan__components">
-            {plan.components.map((c) => (
-              <li class="component">
-                <span class="component__icon"><Icon name={c.icon} size={24} /></span>
-                <h4>{c.title}</h4>
-                <p>{c.text}</p>
-              </li>
-            ))}
-          </ul>
-          <p class="plan__footnote">{plan.footnote}</p>
-        </div>
-      </article>
+          </article>
+        ))}
+      </div>
+      <p class="plans__note">{plansSection.note}</p>
+
+      <div class="included">
+        <h3 class="plan__components-label">{included.label}</h3>
+        <ul class="plan__components">
+          {included.components.map((c) => (
+            <li class="component">
+              <span class="component__icon"><Icon name={c.icon} size={24} /></span>
+              <h4>{c.title}</h4>
+              <p>{c.text}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   </section>
 
-  <!-- What shapes your quote + what the proposal clarifies -->
-  <section class="section surface-white" aria-labelledby="factors-title">
+  <!-- Comparison table -->
+  <section class="section surface-white" aria-labelledby="compare-title">
+    <div class="container">
+      <SectionHeading id="compare-title" eyebrow={comparison.eyebrow} title={comparison.title} align="center" />
+      <div class="compare-wrap">
+        <table class="compare">
+          <caption class="sr-only">Comparison of the Starter and Growth plans</caption>
+          <thead>
+            <tr>
+              <th scope="col"><span class="sr-only">Feature</span></th>
+              <th scope="col">Starter</th>
+              <th scope="col" class="compare__growth">Growth</th>
+            </tr>
+          </thead>
+          <tbody>
+            {comparison.rows.map(([label, a, b]) => (
+              <tr>
+                <th scope="row">{label}</th>
+                {[a, b].map((v, i) => (
+                  <td class:list={{ compare__growth: i === 1 }}>
+                    {v === true ? <><Icon name="check" size={20} class="compare__tick" /><span class="sr-only">Included</span></> : v}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- What we look at + what the proposal clarifies -->
+  <section class="section surface-light" aria-labelledby="factors-title">
     <div class="container quote-grid">
       <div>
         <SectionHeading id="factors-title" eyebrow={factors.eyebrow} title={factors.title} />
@@ -67,6 +103,14 @@ import { meta, hero, plan, factors, proposal, closing } from '../data/pricing';
           {proposal.items.map((p) => <li><Icon name="checkCircle" size={20} /><span>{p}</span></li>)}
         </ul>
       </div>
+    </div>
+  </section>
+
+  <!-- Pricing FAQ -->
+  <section class="section surface-white" aria-labelledby="pricing-faq-title">
+    <div class="container faq-wrap">
+      <SectionHeading id="pricing-faq-title" eyebrow={faq.eyebrow} title={faq.title} align="center" />
+      <FAQ items={faq.items} />
     </div>
   </section>
 
@@ -155,6 +199,65 @@ import { meta, hero, plan, factors, proposal, closing } from '../data/pricing';
   .component p { font-size: var(--text-sm); }
   .plan__footnote { margin-top: var(--space-5); font-size: var(--text-sm); color: var(--body); }
 
+
+  /* ── Plan cards ── */
+  .plans { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); max-width: 1000px; margin-inline: auto; align-items: stretch; }
+  .tier {
+    display: flex; flex-direction: column;
+    background: var(--white);
+    border: 1px solid var(--line-light);
+    border-radius: calc(var(--radius-lg) + 4px);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  .tier__head {
+    padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
+    border-bottom: 3px solid var(--brand-gold);
+    background:
+      radial-gradient(ellipse 70% 100% at 100% 0%, rgba(10, 72, 137, 0.7), transparent 70%),
+      var(--navy-700);
+    color: var(--muted-on-dark);
+  }
+  .tier--growth .tier__head {
+    background:
+      radial-gradient(ellipse 70% 100% at 100% 0%, rgba(237, 191, 12, 0.18), transparent 65%),
+      radial-gradient(ellipse 70% 100% at 0% 100%, rgba(10, 72, 137, 0.75), transparent 70%),
+      var(--brand-navy);
+  }
+  .tier__name { color: var(--warm-white); font-size: var(--text-xs); letter-spacing: 0.18em; text-transform: uppercase; margin: 0 0 var(--space-3); }
+  .tier__price { margin: 0; display: flex; align-items: baseline; gap: 0.35rem; }
+  .tier__amount { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.5rem, 2rem + 2vw, 3.25rem); letter-spacing: -0.03em; line-height: 1; color: var(--brand-gold); }
+  .tier__per { font-weight: 600; color: var(--warm-white); font-size: var(--text-lg); }
+  .tier__rate { margin: var(--space-4) 0 var(--space-1); color: var(--warm-white); font-weight: 650; }
+  .tier__setup { margin: 0; font-size: var(--text-sm); }
+  .tier__features { list-style: none; display: grid; gap: var(--space-3); padding: clamp(1.5rem, 1rem + 2vw, 2.25rem); flex: 1; }
+  .tier__features li { display: flex; gap: var(--space-3); color: var(--ink); font-weight: 500; line-height: 1.45; }
+  .tier__features :global(.icon) { flex: none; color: var(--brand-blue); margin-top: 1px; }
+  .tier__actions { display: grid; gap: var(--space-3); padding: 0 clamp(1.5rem, 1rem + 2vw, 2.25rem) clamp(1.5rem, 1rem + 2vw, 2.25rem); }
+  .tier--growth { border-color: rgba(237, 191, 12, 0.55); }
+  .plans__note {
+    max-width: 760px;
+    margin: var(--space-6) auto 0;
+    text-align: center;
+    font-size: var(--text-base);
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .included { margin-top: clamp(3rem, 2rem + 3vw, 4.5rem); }
+
+  /* ── Comparison table ── */
+  .compare-wrap { max-width: 1000px; margin-inline: auto; overflow-x: auto; border: 1px solid var(--line-light); border-radius: var(--radius-lg); box-shadow: var(--shadow); background: var(--white); }
+  .compare { width: 100%; border-collapse: collapse; font-size: var(--text-base); }
+  .compare th, .compare td { padding: 1rem 1.25rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line-light); }
+  .compare tbody tr:last-child th, .compare tbody tr:last-child td { border-bottom: 0; }
+  .compare thead th { font-family: var(--font-display); font-size: var(--text-lg); color: var(--warm-white); background: var(--navy-700); border-bottom: 3px solid var(--brand-gold); }
+  .compare thead th.compare__growth { background: var(--brand-navy); color: var(--brand-gold); }
+  .compare tbody th { font-weight: 600; color: var(--ink); width: 36%; }
+  .compare td { color: var(--body); }
+  .compare td.compare__growth { background: rgba(237, 191, 12, 0.06); }
+  .compare :global(.compare__tick) { color: var(--brand-blue); }
+  .faq-wrap { max-width: 860px; }
+
   .quote-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(2rem, 1rem + 4vw, 5rem); align-items: start; }
   .factors { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
   .factors li {
@@ -186,6 +289,7 @@ import { meta, hero, plan, factors, proposal, closing } from '../data/pricing';
 
   @media (max-width: 960px) {
     .plan__head, .quote-grid { grid-template-columns: 1fr; }
+    .plans { grid-template-columns: 1fr; max-width: 560px; }
   }
   @media (max-width: 760px) {
     .plan__components { grid-template-columns: 1fr; }
@@ -193,5 +297,9 @@ import { meta, hero, plan, factors, proposal, closing } from '../data/pricing';
   }
   @media (max-width: 520px) {
     .factors { grid-template-columns: 1fr; }
+    .compare { font-size: 0.8125rem; }
+    .compare th, .compare td { padding: 0.7rem 0.45rem; }
+    .compare tbody th { width: 32%; hyphens: auto; overflow-wrap: anywhere; }
+    .compare thead th { font-size: var(--text-base); }
   }
 </style>

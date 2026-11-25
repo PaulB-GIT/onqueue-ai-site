@@ -55,6 +55,137 @@ export const services = {
   note: 'Availability, call routing and integrations depend on the setup we agree with you. We’ll confirm what is supported for your systems before anything goes live.',
 } as const;
 
+/**
+ * SAMPLE CALLS SHOWCASE (homepage, below Services).
+ * Illustrative sample dialogue only. Not real calls, customers or results.
+ * Each service has: a tab label + icon, the call lines, a result line and status chips.
+ * `chipIcons` must use names from src/components/Icon.astro.
+ * `recording`: optional real sample-call audio with a timed transcript. Leave as
+ * `null` and no player is shown for that service (never add placeholder audio).
+ */
+export interface Recording {
+  /** Audio file in public/audio/, e.g. '/audio/customer-support.mp3'. */
+  src: string;
+  /** Short note shown beside the player. */
+  note: string;
+  /** Transcript lines. `at` = seconds into the recording when the line starts. */
+  transcript: { at: number; speaker: 'agent' | 'caller'; text: string }[];
+}
+
+export const showcase = {
+  eyebrow: 'Sample calls',
+  title: 'See how each service handles a call.',
+  intro: 'Choose a service to see an example conversation. The preview moves to the next service on its own.',
+  label: 'Illustrative sample, not a live call',
+  slideSeconds: 10,
+  items: [
+    {
+      id: 'appointments',
+      tab: 'Appointment setting',
+      icon: 'calendar',
+      startAt: 64,
+      caller: 'JR',
+      recording: null as Recording | null,
+      lines: [
+        { speaker: 'agent', text: 'Hi Jordan, this is the AI assistant for the remodeling team. I’m following up on the estimate you requested. Is now a good time?' },
+        { speaker: 'caller', text: 'Yes. Thursday afternoon works best for me.' },
+        { speaker: 'agent', text: 'Thursday at 2:30 PM is open. Shall I book that for you?' },
+        { speaker: 'caller', text: 'That’s perfect, thank you.' },
+      ],
+      result: 'Booked for Thursday, 2:30 PM. Details noted for the team.',
+      chips: [
+        { icon: 'phone', label: 'Connected' },
+        { icon: 'check', label: 'Qualified' },
+        { icon: 'calendar', label: 'Calendar checked' },
+        { icon: 'check', label: 'Booked' },
+      ],
+    },
+    {
+      id: 'receptionist',
+      tab: 'Receptionist',
+      icon: 'receptionist',
+      startAt: 18,
+      caller: 'SL',
+      recording: null as Recording | null,
+      lines: [
+        { speaker: 'agent', text: 'Thanks for calling. I’m the clinic’s AI receptionist. How can I help today?' },
+        { speaker: 'caller', text: 'Hi, I have a question about my bill.' },
+        { speaker: 'agent', text: 'I can connect you with our billing team. May I have your name first?' },
+        { speaker: 'caller', text: 'Sure, it’s Sam Lee.' },
+      ],
+      result: 'Routed to billing with the caller’s name and reason for calling.',
+      chips: [
+        { icon: 'phone', label: 'Greeted' },
+        { icon: 'check', label: 'Reason identified' },
+        { icon: 'list', label: 'Details captured' },
+        { icon: 'route', label: 'Routed' },
+      ],
+    },
+    {
+      id: 'answering',
+      tab: 'Answering service',
+      icon: 'message',
+      startAt: 41,
+      caller: 'MP',
+      recording: null as Recording | null,
+      lines: [
+        { speaker: 'agent', text: 'You’ve reached the plumbing team after hours. I’m the AI answering service. Can I take a message?' },
+        { speaker: 'caller', text: 'My water heater is leaking. Could someone call me back first thing tomorrow?' },
+        { speaker: 'agent', text: 'Of course. What’s the best number to reach you?' },
+        { speaker: 'caller', text: 'This number is fine. It’s Maria.' },
+      ],
+      result: 'Message and callback details passed to the team for the morning.',
+      chips: [
+        { icon: 'phone', label: 'Answered' },
+        { icon: 'message', label: 'Message taken' },
+        { icon: 'clock', label: 'Callback noted' },
+        { icon: 'check', label: 'Team notified' },
+      ],
+    },
+    {
+      id: 'support',
+      tab: 'Customer support',
+      icon: 'support',
+      startAt: 27,
+      caller: 'DK',
+      recording: null as Recording | null,
+      lines: [
+        { speaker: 'agent', text: 'Hi, I’m the AI assistant for the rental desk. How can I help?' },
+        { speaker: 'caller', text: 'What time do you open on Saturday?' },
+        { speaker: 'agent', text: 'We open at 8 AM on Saturdays. Is there anything else I can help with?' },
+        { speaker: 'caller', text: 'I also need to change my booking.' },
+      ],
+      result: 'Change request logged and passed to a team member to follow up.',
+      chips: [
+        { icon: 'checkCircle', label: 'Question answered' },
+        { icon: 'list', label: 'Request logged' },
+        { icon: 'handoff', label: 'Escalated to team' },
+      ],
+    },
+    {
+      id: 'outbound',
+      tab: 'Outbound follow-up',
+      icon: 'outbound',
+      startAt: 35,
+      caller: 'AM',
+      recording: null as Recording | null,
+      lines: [
+        { speaker: 'agent', text: 'Hi Alex, this is the law office’s AI assistant. You recently asked about a consultation. Is now a good time?' },
+        { speaker: 'caller', text: 'Yes, I’d still like to book one.' },
+        { speaker: 'agent', text: 'Great. I’ll note that, and the team will confirm a time with you.' },
+        { speaker: 'caller', text: 'Thanks, that works.' },
+      ],
+      result: 'Interest confirmed. The team will confirm a consultation time.',
+      chips: [
+        { icon: 'phone', label: 'Connected' },
+        { icon: 'check', label: 'Interest confirmed' },
+        { icon: 'list', label: 'Notes saved' },
+        { icon: 'handoff', label: 'Team notified' },
+      ],
+    },
+  ],
+} as const;
+
 export const conversation = {
   eyebrow: 'In conversation',
   title: 'Natural, clear and honest about being AI.',

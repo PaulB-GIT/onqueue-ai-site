@@ -6,7 +6,7 @@
 import Icon from './Icon.astro';
 
 interface Props {
-  items: readonly { q: string; a: string }[];
+  items: readonly { q: string; a: string; link?: { href: string; label: string } }[];
 }
 const { items } = Astro.props;
 ---
@@ -17,13 +17,14 @@ const { items } = Astro.props;
         <span class="faq__title">{item.q}</span>
         <span class="faq__icon"><Icon name="arrowDown" size={18} /></span>
       </summary>
-      <div class="faq__a"><p>{item.a}</p></div>
+      <div class="faq__a"><p>{item.a}{item.link && <>{' '}<a href={item.link.href} class="faq__link">{item.link.label}</a></>}</p></div>
     </details>
   ))}
 </div>
 
 <style>
   .faq { display: grid; gap: var(--space-3); }
+  .faq__link { color: var(--brand-blue); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
   .faq__item {
     background: var(--white);
     border: 1px solid var(--line-light);
