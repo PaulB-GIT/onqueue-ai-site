@@ -12,7 +12,7 @@ import { showcase } from '../data/home';
 
 const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 ---
-<section class="section surface-dark showcase" aria-labelledby="showcase-title" data-showcase data-seconds={showcase.slideSeconds}>
+<section id="sample-calls" class="section surface-dark showcase" aria-labelledby="showcase-title" data-showcase data-seconds={showcase.slideSeconds}>
   <div class="tech-grid" aria-hidden="true"></div>
   <div class="showcase__glow showcase__glow--a" aria-hidden="true"></div>
   <div class="showcase__glow showcase__glow--b" aria-hidden="true"></div>
@@ -111,11 +111,18 @@ const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${Str
         </div>
         <div class="callcard__foot">
           <span class="callcard__label" data-card-label>{showcase.items[0].recording ? 'Recorded test call, not a live customer call' : showcase.label}</span>
+          <span class="callcard__btns">
+          <button class="callcard__toggle callcard__share" type="button" data-share hidden>
+            <Icon name="copy" size={16} />
+            <span data-share-label>Copy link to this call</span>
+          </button>
+          <span class="sr-only" role="status" aria-live="polite" data-share-status></span>
           <button class="callcard__toggle" type="button" data-toggle hidden aria-pressed="false">
             <span class="callcard__toggle-pause"><Icon name="pause" size={16} /></span>
             <span class="callcard__toggle-play"><Icon name="play" size={16} /></span>
             <span data-toggle-label>Pause slideshow</span>
           </button>
+          </span>
         </div>
         <div class="callcard__progress" aria-hidden="true"><span data-progress></span></div>
       </div>
@@ -354,6 +361,8 @@ const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${Str
     cursor: pointer;
   }
   .callcard__toggle:hover { border-color: var(--brand-gold); }
+  .callcard__btns { display: inline-flex; flex-wrap: wrap; gap: var(--space-2); }
+  .showcase { scroll-margin-top: calc(var(--header-h) + 8px); }
   .callcard__toggle-play { display: none; }
   .callcard__toggle[aria-pressed='true'] .callcard__toggle-play { display: inline-flex; }
   .callcard__toggle[aria-pressed='true'] .callcard__toggle-pause { display: none; }
@@ -649,7 +658,38 @@ const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${Str
       });
     });
 
+
+    // Shareable links: /#sample-calls opens the section, /#sample-calls-<service> opens that service's tab
+    const share = root.querySelector<HTMLButtonElement>('[data-share]');
+    const shareLabel = root.querySelector<HTMLElement>('[data-share-label]');
+    const shareStatus = root.querySelector<HTMLElement>('[data-share-status]');
+    const ids = panels.map((p) => p.id.replace('sc-panel-', ''));
+    const openFromHash = () => {
+      const m = location.hash.match(/^#sample-calls(?:-([\w-]+))?$/);
+      if (!m) return;
+      const i = m[1] ? ids.indexOf(m[1]) : -1;
+      if (i > -1) show(i);
+      window.setTimeout(() => root.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }), 60);
+    };
+    window.addEventListener('hashchange', openFromHash);
+    if (share && shareLabel && shareStatus) {
+      share.hidden = false;
+      share.addEventListener('click', async () => {
+        const url = `${location.origin}${location.pathname}#sample-calls-${ids[index]}`;
+        let ok = false;
+        try { await navigator.clipboard.writeText(url); ok = true; } catch {
+          const t = document.createElement('textarea'); t.value = url; t.setAttribute('readonly', ''); t.className = 'sr-only';
+          document.body.appendChild(t); t.select(); try { ok = document.execCommand('copy'); } catch { ok = false; } t.remove();
+        }
+        const msg = ok ? 'Link copied' : url;
+        shareLabel.textContent = ok ? 'Link copied' : 'Copy this link: ' + url;
+        shareStatus.textContent = ok ? `Link copied: ${url}` : msg;
+        window.setTimeout(() => { shareLabel.textContent = 'Copy link to this call'; }, 2500);
+      });
+    }
+
     show(0);
+    openFromHash();
     requestAnimationFrame(tick);
 
     tabs.forEach((tab, i) => {
