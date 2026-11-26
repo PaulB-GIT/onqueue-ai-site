@@ -41,7 +41,7 @@ const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${Str
               <div class="callpanel__head">
                 <span class="callpanel__live" aria-hidden="true"></span>
                 <span class="callpanel__service"><Icon name={item.icon} size={20} />{item.tab}</span>
-                {item.industry && <span class="callpanel__industry"><Icon name="hardhat" size={14} />{item.industry}</span>}
+                {item.industry && <span class="callpanel__industry"><Icon name={item.industryIcon} size={14} />{item.industry}</span>}
                 <span class="callpanel__speaking" aria-hidden="true">
                   <span class="callpanel__eq"><i></i><i></i><i></i></span>
                   Speaking

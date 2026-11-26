@@ -50,7 +50,16 @@ def fix_href(m):
 body = re.sub(r'href="([^"]+)"', fix_href, body)
 # Embed sample-call recordings so the single-file preview can play them
 AUDIO_MIME = {'.mp3': 'audio/mpeg', '.m4a': 'audio/mp4', '.wav': 'audio/wav', '.ogg': 'audio/ogg'}
-body = re.sub(r'src="(/audio/[^"]+)"', lambda m: f'src="{b64(dist / m.group(1).lstrip("/"), AUDIO_MIME.get(pathlib.Path(m.group(1)).suffix.lower(), "audio/mpeg"))}"', body)
+import subprocess, tempfile, shutil
+def embed_audio(m):
+    path = dist / m.group(1).lstrip('/')
+    # Keep the single-file preview small: embed a 64 kbps copy (the site itself serves the full-quality file)
+    if shutil.which('ffmpeg'):
+        tmp = pathlib.Path(tempfile.mkdtemp()) / 'preview.mp3'
+        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', str(path), '-ac', '1', '-b:a', '64k', str(tmp)], check=True)
+        return f'src="{b64(tmp, "audio/mpeg")}"'
+    return f'src="{b64(path, AUDIO_MIME.get(path.suffix.lower(), "audio/mpeg"))}"'
+body = re.sub(r'src="(/audio/[^"]+)"', embed_audio, body)
 body = body.replace(' aria-current="page"', '')
 for img in set(re.findall(r'/brand/[\w.-]+\.png', body)):
     body = body.replace(img, b64(dist / img.lstrip('/'), 'image/png'))
